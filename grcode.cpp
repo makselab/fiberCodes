@@ -4,7 +4,7 @@ using namespace std;
 
 void calculateVectors(vector< vector<int> > connections, vector<int> nodeColors, vector< vector<int> > &vectors, bool directed) {
     for(int i = 0; i < connections.size(); i++) {
-        if(directed == 0) {
+        if(directed == false) {
             vectors[connections[i][0]][nodeColors[connections[i][1]]]++;
         }
         vectors[connections[i][1]][nodeColors[connections[i][0]]]++;
