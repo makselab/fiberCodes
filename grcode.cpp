@@ -2,9 +2,11 @@
 #include <vector>
 using namespace std;
 
-void calculateVectorsUndirected(vector< vector<int> > connections, vector<int> nodeColors, vector< vector<int> > &vectors) {
+void calculateVectors(vector< vector<int> > connections, vector<int> nodeColors, vector< vector<int> > &vectors, bool directed) {
     for(int i = 0; i < connections.size(); i++) {
-        vectors[connections[i][0]][nodeColors[connections[i][1]]]++;
+        if(directed == 0) {
+            vectors[connections[i][0]][nodeColors[connections[i][1]]]++;
+        }
         vectors[connections[i][1]][nodeColors[connections[i][0]]]++;
     }
 
@@ -17,6 +19,7 @@ void calculateVectorsUndirected(vector< vector<int> > connections, vector<int> n
     }
     cout << endl;
 }
+
 
 // returns new number of colors
 int classifyNodes(vector< vector<int> > vectors, vector<int> &nodeColors) {
@@ -52,8 +55,9 @@ int classifyNodes(vector< vector<int> > vectors, vector<int> &nodeColors) {
 }
 
 int main() {
-    int numberOfNodes = 6;
-    int numberOfConnections = 7;
+    int numberOfNodes = 4;
+    int numberOfConnections = 6;
+    bool directed = 1;
 
     // create 2D vector array to store all connections
     vector< vector<int> > connections(numberOfConnections);
@@ -66,12 +70,11 @@ int main() {
 
     // define connections
     connections[0][0] = 0; connections[0][1] = 1;
-    connections[1][0] = 1; connections[1][1] = 2;
-    connections[2][0] = 2; connections[2][1] = 3;
-    connections[3][0] = 3; connections[3][1] = 4;
-    connections[4][0] = 4; connections[4][1] = 5;
-    connections[5][0] = 0; connections[5][1] = 4;
-    connections[6][0] = 0; connections[6][1] = 5;
+    connections[1][0] = 0; connections[1][1] = 2;
+    connections[2][0] = 1; connections[2][1] = 3;
+    connections[3][0] = 2; connections[3][1] = 0;
+    connections[4][0] = 2; connections[4][1] = 3;
+    connections[5][0] = 3; connections[5][1] = 0;
     for(int i = 0; i < numberOfConnections; i++) {
         for(int j = 0; j < 2; j++)
             cout << "connections[" << i << "][" << j << "] = " << connections[i][j] << "\t";
@@ -85,7 +88,7 @@ int main() {
         for(int i = 0; i < numberOfNodes; i++)
             vectors[i].resize(numberOfColors);
 
-        calculateVectorsUndirected(connections, nodeColors, vectors);
+        calculateVectors(connections, nodeColors, vectors, directed);
         int nOC = classifyNodes(vectors, nodeColors);
         if(nOC == numberOfColors) {break;}
         else {numberOfColors = nOC;}
