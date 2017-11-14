@@ -84,10 +84,11 @@ void readConnectionsFile(vector< vector<int> > &connections) {
 
     int i = 0;
     while(1) {
-        if(!getline(config, line, '\n')) {break;}
+        if(!getline(config, line, '\t')) {break;}
         // we add -1 here, because in adjacency file we enumerate from 1 to n
-        connections[i][0] = line[0] - '0' - 1;
-        connections[i][1] = line[2] - '0' - 1;
+        connections[i][0] = stoi(line) - 1;
+        getline(config, line, '\n');
+        connections[i][1] = stoi(line) - 1;
         i++;
     }
     config.close();
