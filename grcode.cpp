@@ -8,27 +8,31 @@ using namespace std;
 
 void calculateVectors(vector< vector<int> > connections, vector<int> nodeColors, vector< vector<int> > &vectors, bool directed);
 int classifyNodes(vector< vector<int> > vectors, vector<int> &nodeColors);
-void readConfigFile(int &numberOfNodes, bool &directed, int &numberOfConnections);
-void readConnectionsFile(vector< vector<int> > &connections);
+void readConfigFile(int &numberOfNodes, int &numberOfConnections, bool &directed, bool &weighted);
+void readConnectionsFile(vector< vector<int> > &connections, bool weighted);
 
 int main() {
+	if(1)	{int a;}
+	else	{bool a;}
+	a = 15;
+	cout << a << endl;
     int numberOfNodes;
     int numberOfConnections;
     bool directed;
-    readConfigFile(numberOfNodes, directed, numberOfConnections);
+	bool weighted;
+    readConfigFile(numberOfNodes, numberOfConnections, directed, weighted);
 
     // create 2D vector array to store all connections
     vector< vector<int> > connections(numberOfConnections);
     for(int i = 0; i < numberOfConnections; i++)
-        connections[i].resize(2);
-    readConnectionsFile(connections);
+        connections[i].resize(weighted?3:2);
+    readConnectionsFile(connections, weighted);
     // print connections
     for(int i = 0; i < numberOfConnections; i++) {
-        for(int j = 0; j < 2; j++)
-            cout << "connections[" << i << "][" << j << "] = " << connections[i][j] << "\t";
-        cout << endl;
-    }
-    cout << endl;
+		cout << "Connection " << i << ": " << connections[i][0] + 1 << " -> " << connections[i][1] + 1;
+		if(weighted) {cout << ". Weight = " << connections[i][2];}
+		cout << endl;
+	}
 
     // defining all colors initially to be same
     vector<int> nodeColors(numberOfNodes, 0);
@@ -51,7 +55,7 @@ int main() {
         cout << i + 1 << " " << nodeColors[i] << endl;
 }
 
-void readConfigFile(int &numberOfNodes, bool &directed, int &numberOfConnections) {
+void readConfigFile(int &numberOfNodes, int &numberOfConnections, bool &directed, bool &weighted) {
 // First line is number of nodes, second one is if graph is directed(true or false), then connections follow up
     string line;
     ifstream config;
@@ -64,6 +68,9 @@ void readConfigFile(int &numberOfNodes, bool &directed, int &numberOfConnections
     getline(config, line, '\n');
     directed = stoi(line);
 
+    getline(config, line, '\n');
+    weighted = stoi(line);
+
     numberOfConnections = 0;
     while(1) {
         if(!std::getline(config, line, '\n')) {break;}
@@ -72,13 +79,14 @@ void readConfigFile(int &numberOfNodes, bool &directed, int &numberOfConnections
     config.close();
 }
 
-void readConnectionsFile(vector< vector<int> > &connections) {
+void readConnectionsFile(vector< vector<int> > &connections, bool weighted) {
     string line;
     ifstream config;
 
     config.open(inputFile, ifstream::in);
 
-    // skip 2 lines with config data
+    // skip 3 lines with config data
+    getline(config, line, '\n');
     getline(config, line, '\n');
     getline(config, line, '\n');
 
@@ -87,8 +95,12 @@ void readConnectionsFile(vector< vector<int> > &connections) {
         if(!getline(config, line, '\t')) {break;}
         // we add -1 here, because in adjacency file we enumerate from 1 to n
         connections[i][0] = stoi(line) - 1;
-        getline(config, line, '\n');
+        getline(config, line, weighted?'\t':'\n');
         connections[i][1] = stoi(line) - 1;
+		if(weighted) {
+		    getline(config, line, '\n');
+		    connections[i][2] = stoi(line);
+		}
         i++;
     }
     config.close();
