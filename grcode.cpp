@@ -23,12 +23,8 @@ int main() {
         connections[i].resize(2);
     readConnectionsFile(connections);
     // print connections
-    for(int i = 0; i < numberOfConnections; i++) {
-        for(int j = 0; j < 2; j++)
-            cout << "connections[" << i << "][" << j << "] = " << connections[i][j] << "\t";
-        cout << endl;
-    }
-    cout << endl;
+    for(int i = 0; i < numberOfConnections; i++)
+    	cout << "Connection " << i << ": " << connections[i][0] + 1 << " -> " << connections[i][1] + 1 << endl;
 
     // defining all colors initially to be same
     vector<int> nodeColors(numberOfNodes, 0);
