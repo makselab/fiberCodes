@@ -8,19 +8,16 @@ using namespace std;
 
 void calculateVectors(vector< vector<int> > connections, vector<int> nodeColors, vector< vector<int> > &vectors, bool directed);
 int classifyNodes(vector< vector<int> > vectors, vector<int> &nodeColors);
-void readConfigFile(int &numberOfNodes, int &numberOfConnections, bool &directed, bool &weighted);
+void readConfigFile(int &numberOfNodes, int &numberOfConnections, bool &directed, bool &weighted, int &numberOfWeights);
 void readConnectionsFile(vector< vector<int> > &connections, bool weighted);
 
 int main() {
-	if(1)	{int a;}
-	else	{bool a;}
-	a = 15;
-	cout << a << endl;
     int numberOfNodes;
     int numberOfConnections;
     bool directed;
 	bool weighted;
-    readConfigFile(numberOfNodes, numberOfConnections, directed, weighted);
+	int numberOfWeights;
+    readConfigFile(numberOfNodes, numberOfConnections, directed, weighted, numberOfWeights);
 
     // create 2D vector array to store all connections
     vector< vector<int> > connections(numberOfConnections);
@@ -35,14 +32,19 @@ int main() {
 	}
 
     // defining all colors initially to be same
+	// different colors here just mean different type of nodes
     vector<int> nodeColors(numberOfNodes, 0);
     int numberOfColors = 1;
 
     while(1) {
         // create 2D vector array to store all vectors belonging to each node
+		/* Explanation why array is of size numberOfNodes x (numberOfColors * numberOfWeights). There are two ways how to do it.
+		Either it can be done as a 3D array and then we will need two realisations for weighted and non-weighted design.
+		Or vectors themselves can be formed in a bit weird way, but we will classify nodes comparing vectors not worrying about their structure.
+		It improves readability and simpliness only paying with the strange enumeration of array */
         vector< vector<int> > vectors(numberOfNodes);
         for(int i = 0; i < numberOfNodes; i++)
-            vectors[i].resize(numberOfColors);
+            vectors[i].resize(numberOfColors * numberOfWeights);
 
         calculateVectors(connections, nodeColors, vectors, directed);
         int nOC = classifyNodes(vectors, nodeColors);
@@ -55,8 +57,15 @@ int main() {
         cout << i + 1 << " " << nodeColors[i] << endl;
 }
 
-void readConfigFile(int &numberOfNodes, int &numberOfConnections, bool &directed, bool &weighted) {
-// First line is number of nodes, second one is if graph is directed(true or false), then connections follow up
+void readConfigFile(int &numberOfNodes, int &numberOfConnections, bool &directed, bool &weighted, int &numberOfWeights) {
+// First line is number of nodes
+// Second is if graph is directed(true or false)
+// Third is weighted(true or false)
+// Forth is number of different weights
+/* Here the small remark included. We assume that we know exactly the amount of different possible
+n weights and they are from 0..n. From the perspective of the algorithm there is no difference if
+the weights are numbers or names, but the person who creates input has to take care of it being exactly n in form 0..n. */
+// then connections follow up
     string line;
     ifstream config;
 
@@ -70,6 +79,9 @@ void readConfigFile(int &numberOfNodes, int &numberOfConnections, bool &directed
 
     getline(config, line, '\n');
     weighted = stoi(line);
+
+    getline(config, line, '\n');
+    numberOfWeights = stoi(line);
 
     numberOfConnections = 0;
     while(1) {
