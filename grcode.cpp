@@ -25,11 +25,11 @@ int main() {
 		connections[i].resize(weighted?3:2);
 	readConnectionsFile(connections, weighted);
 	// print connections
-	for(int i = 0; i < numberOfConnections; i++) {
+	/*for(int i = 0; i < numberOfConnections; i++) {
 		cout << "Connection " << i << ": " << connections[i][0] + 1 << " -> " << connections[i][1] + 1;
 		if(weighted) {cout << ". Weight = " << connections[i][2];}
 		cout << endl;
-	}
+	}*/
 
 	// defining all colors initially to be same
 	// different colors here just mean different type of nodes
@@ -129,7 +129,7 @@ void calculateVectors(vector< vector<int> > connections, vector<int> nodeColors,
 		}
 		vectors[connections[i][1]][nodeColors[connections[i][0]] * multiplier + connections[i][2]]++;
 	}
-
+/*
 	// output vector value
 	for(int i = 0; i < vectors.size(); i++) {
 		for(int j = 0; j < vectors[0].size(); j++) {
@@ -137,7 +137,7 @@ void calculateVectors(vector< vector<int> > connections, vector<int> nodeColors,
 		}
 		cout << endl;
 	}
-	cout << endl;
+	cout << endl;*/
 }
 
 // returns new number of colors
@@ -153,7 +153,7 @@ int classifyNodes(vector< vector<int> > vectors, vector<int> &nodeColors) {
 		}
 		if(add == 1) {vectorTypes.push_back(vectors[i]);}
 	}
-
+/*
 	// output unique vector types
 	for(int i = 0; i < vectorTypes.size(); i++) {
 		for(int j = 0; j < vectorTypes[0].size(); j++) {
@@ -162,7 +162,7 @@ int classifyNodes(vector< vector<int> > vectors, vector<int> &nodeColors) {
 		cout << endl;
 	}
 	cout << endl;
-
+*/
 	// now let`s reshuffle node types for next step
 	for(int i = 1; i < nodeColors.size(); i++) {
 		for(int j = 0; j < vectorTypes.size(); j++) {
