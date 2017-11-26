@@ -6,7 +6,7 @@ using namespace std;
 
 #define inputFile "adjacency.txt"
 
-void calculateVectors(vector< vector<int> > connections, vector<int> nodeColors, vector< vector<int> > &vectors, bool directed, bool weighted);
+void calculateVectors(vector< vector<int> > connections, vector<int> nodeColors, vector< vector<int> > &vectors, bool directed, int numberOfWeights);
 int classifyNodes(vector< vector<int> > vectors, vector<int> &nodeColors);
 void readConfigFile(int &numberOfNodes, int &numberOfConnections, bool &directed, bool &weighted, int &numberOfWeights);
 void readConnectionsFile(vector< vector<int> > &connections, bool weighted);
@@ -46,7 +46,7 @@ int main() {
 		for(int i = 0; i < numberOfNodes; i++)
 			vectors[i].resize(numberOfColors * numberOfWeights);
 
-		calculateVectors(connections, nodeColors, vectors, directed, weighted);
+		calculateVectors(connections, nodeColors, vectors, directed, weighted?numberOfWeights:0);
 		int nOC = classifyNodes(vectors, nodeColors);
 		if(nOC == numberOfColors) {break;}
 		else {numberOfColors = nOC;}
@@ -101,6 +101,7 @@ void readConnectionsFile(vector< vector<int> > &connections, bool weighted) {
 	getline(config, line, '\n');
 	getline(config, line, '\n');
 	getline(config, line, '\n');
+	getline(config, line, '\n');
 
 	int i = 0;
 	while(1) {
@@ -118,12 +119,15 @@ void readConnectionsFile(vector< vector<int> > &connections, bool weighted) {
 	config.close();
 }
 
-void calculateVectors(vector< vector<int> > connections, vector<int> nodeColors, vector< vector<int> > &vectors, bool directed, bool weighted) {
+void calculateVectors(vector< vector<int> > connections, vector<int> nodeColors, vector< vector<int> > &vectors, bool directed, int numberOfWeights) {
+	int multiplier = 0;
+	if(numberOfWeights == 0) {multiplier = 1;}
+	else {multiplier = numberOfWeights;}
 	for(int i = 0; i < connections.size(); i++) {
 		if(directed == false) {
 			vectors[connections[i][0]][nodeColors[connections[i][1]]]++;
 		}
-		vectors[connections[i][1]][nodeColors[connections[i][0]]]++;
+		vectors[connections[i][1]][nodeColors[connections[i][0]] * multiplier + connections[i][2]]++;
 	}
 
 	// output vector value
