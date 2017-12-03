@@ -54,7 +54,7 @@ int main() {
 
 	// we add 1 here, because we want to enumerate output from 1 to n
 	for(int i = 0; i < numberOfNodes; i++)
-		cout << i + 1 << " " << nodeColors[i] << endl;
+		cout << i + 1 << "\t" << nodeColors[i] << endl;
 }
 
 void readConfigFile(int &numberOfNodes, int &numberOfConnections, bool &directed, bool &weighted, int &numberOfWeights) {
