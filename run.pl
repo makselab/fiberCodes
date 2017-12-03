@@ -8,16 +8,16 @@ my @map = @$map_ref;
 my @adjacency = @$adjacency_ref;
 
 # adjacency.txt structure
-# size in cells
-# directed/undirected
-# weighted/not weighted
-# number of weights
-# adjacency matrix
+# 1: size in cells
+# 2: directed/undirected
+# 3: weighted/not weighted
+# 4: number of weights
+# 5..inf: adjacency matrix
 open (adjacencyFile, '>adjacency.txt');
 print adjacencyFile scalar @map;
-print adjacencyFile "\n1\n";
+print adjacencyFile "\n0\n";
+print adjacencyFile "0\n";
 print adjacencyFile "1\n";
-print adjacencyFile "3\n";
 for($i = 0; $i < $linenumber; $i++) {
         for($j = 0; $j < 3; $j++) {
                 print adjacencyFile "$adjacency[$i][$j]\t";
@@ -47,7 +47,7 @@ foreach(@data) {
 }
 my %groupoids;
 for($i = 0; $i < scalar @output; $i++) {
-	push(@{$groupoids{$output[$i][1]}}, $map[$output[$i][0]]); 
+	push(@{$groupoids{$output[$i][1]}}, $map[$output[$i - 1][0]]); 
 }
 
 for($i = 0; $i < $numberOfGroupoids; $i++) {
