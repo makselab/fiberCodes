@@ -31,7 +31,10 @@ print("Compiling code\n");
 system("g++ -std=c++11 ./grcode.cpp -o grcode");
 # TODO: check if there are no "   " instead of '\t' symbol, cause it will cause problems
 print("Running code\n");
+my $start = time;
 my $groupoidOutput = qx("./grcode");
+my $duration = time - $start;
+print "Execution time: $duration s\n";
 
 # now we want to put output in a more readable way
 print("Creating output\n");
@@ -45,15 +48,19 @@ foreach(@data) {
 	$output[$i++][1] = $tmp[1];
 	if($tmp[1] > $numberOfGroupoids) {$numberOfGroupoids = $tmp[1];}
 }
+# we add 1, cause number of groupoids is bigger then maximum index of groupoid
+$numberOfGroupoids++;
+
 my %groupoids;
+
 for($i = 0; $i < scalar @output; $i++) {
-	push(@{$groupoids{$output[$i][1]}}, $map[$output[$i - 1][0]]); 
+	push(@{$groupoids{$output[$i][1]}}, $map[$output[$i][0] - 1]);
 }
 
 for($i = 0; $i < $numberOfGroupoids; $i++) {
-	print("$i: ");
-	for($j = 0; $j < @{$groupoids{$i}}; $j++) {
-		print("$groupoids{$i}[$j], ");
+	print("$i:\t");
+	for($j = 0; $j < scalar @{$groupoids{$i}}; $j++) {
+		print("$groupoids{$i}[$j]\t");
 	}
 	print("\n");
 }
