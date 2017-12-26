@@ -52,9 +52,8 @@ int main() {
 		else {numberOfColors = nOC;}
 	}
 
-	// we add 1 here, because we want to enumerate output from 1 to n
 	for(int i = 0; i < numberOfNodes; i++)
-		cout << i + 1 << "\t" << nodeColors[i] << endl;
+		cout << i << "\t" << nodeColors[i] << endl;
 }
 
 void readConfigFile(int &numberOfNodes, int &numberOfConnections, bool &directed, bool &weighted, int &numberOfWeights) {
@@ -106,10 +105,9 @@ void readConnectionsFile(vector< vector<int> > &connections, bool weighted) {
 	int i = 0;
 	while(1) {
 		if(!getline(config, line, '\t')) {break;}
-		// we add -1 here, because in adjacency file we enumerate from 1 to n
-		connections[i][0] = stoi(line) - 1;
+		connections[i][0] = stoi(line);
 		getline(config, line, weighted?'\t':'\n');
-		connections[i][1] = stoi(line) - 1;
+		connections[i][1] = stoi(line);
 		if(weighted) {
 			getline(config, line, '\n');
 			connections[i][2] = stoi(line);
