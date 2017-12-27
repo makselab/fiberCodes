@@ -97,7 +97,7 @@ sub readInputFile {
 sub createMaps {
 	my @tmpInput = @globalInput;
 	my @map;
-	my @weightMap;
+	my %weightMap;
 	foreach my $line (@tmpInput) {
 		my $tmp1;
 		my $tmp2;
@@ -119,8 +119,8 @@ sub createMaps {
 		if(!grep{$_ =~ /$tmp2/} @map) {
 			push @map, $tmp2;
 		}
-		if($weighted == 1 and !grep{$_ =~ /$tmp3/} @weightMap) {
-			push @weightMap, $tmp3;
+		if($weighted == 1 and !exists $weightMap{$tmp3}) {
+			$weightMap{$tmp3} = keys %weightMap;
 		}
 	}
 	@map = sort values @map;
@@ -133,18 +133,16 @@ sub createMaps {
 		$i++;
 	}
 	print("Printing map of all possible weights...\n");
-	my $i = 0;
-	foreach my $entry (@weightMap) {
-		print("$i\t- $entry\n");
-		$i++;
+	foreach my $entry (keys %weightMap) {
+		print("$weightMap{$entry}\t - $entry\n");
 	}
-	return (\@map, \@weightMap);
+	return (\@map, \%weightMap);
 }
 
 sub createAdjacency {
 	my ($map_ref, $weightMap_ref) = @_;
 	my @map = @$map_ref;
-	my @weightMap = @$weightMap_ref;
+	my %weightMap = %$weightMap_ref;
 	my @tmpInput = @globalInput;
 	my @adjacency = ();
 
@@ -170,8 +168,9 @@ sub createAdjacency {
 		($pos) = grep{ $map[$_] =~ /$destination/} 0 .. $#map;
 		$adjacency[$lineNumber][1] = $pos;
 		if($weighted == 1) {
-			($pos) = grep{ $weightMap[$_] =~ /$weight/} 0 .. $#weightMap;
-			$adjacency[$lineNumber][2] = $pos;
+			$adjacency[$lineNumber][2] = $weightMap{$weight};
+			#($pos) = grep{ $weightMap[$_] =~ /$weight/} 0 .. $#weightMap;
+			#$adjacency[$lineNumber][2] = $pos;
 		}
 		$lineNumber++;
 	}
@@ -194,7 +193,7 @@ sub createAdjacency {
 sub createConfigurationFile {
 	my ($map_ref, $weightMap_ref, @adjacency) = @_;
 	my $numberOfNodes = scalar @$map_ref;
-	my $numberOfWeights = scalar @$weightMap_ref;
+	my $numberOfWeights = scalar %$weightMap_ref;
 	my $numberOfConnections = scalar @adjacency;
 	my $secondSize = @{$adjacency[0]};
 	# adjacency.txt structure
