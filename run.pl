@@ -85,6 +85,8 @@ sub readInputFile {
 	close(FID);
 	@globalInput = split(/\n/, $input);
 
+	@globalInput = grep { $_ ne "" } @globalInput;
+
 	#print input
 	print("Printing input file.\n");
 	foreach my $line (@globalInput) {
