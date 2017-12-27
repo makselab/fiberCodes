@@ -118,14 +118,11 @@ void readConnectionsFile(vector< vector<int> > &connections, bool weighted) {
 }
 
 void calculateVectors(vector< vector<int> > connections, vector<int> nodeColors, vector< vector<int> > &vectors, bool directed, int numberOfWeights) {
-	int multiplier = 0;
-	if(numberOfWeights == 0) {multiplier = 1;}
-	else {multiplier = numberOfWeights;}
 	for(int i = 0; i < connections.size(); i++) {
 		if(directed == false) {
-			vectors[connections[i][0]][nodeColors[connections[i][1]] * multiplier + connections[i][2]]++;
+			vectors[connections[i][0]][nodeColors[connections[i][1]] * numberOfWeights + connections[i][2]]++;
 		}
-		vectors[connections[i][1]][nodeColors[connections[i][0]] * multiplier + connections[i][2]]++;
+		vectors[connections[i][1]][nodeColors[connections[i][0]] * numberOfWeights + connections[i][2]]++;
 	}
 /*
 	// output vector value
