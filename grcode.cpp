@@ -44,7 +44,7 @@ int main() {
 		It improves readability and simpliness only paying with the strange enumeration of array */
 		vector< vector<int> > vectors(numberOfNodes);
 		for(int i = 0; i < numberOfNodes; i++)
-			vectors[i].resize(numberOfColors * numberOfWeights);
+			vectors[i].resize(numberOfColors * weighted?numberOfWeights:1);
 
 		calculateVectors(connections, nodeColors, vectors, directed, weighted?numberOfWeights:0);
 		int nOC = classifyNodes(vectors, nodeColors);
