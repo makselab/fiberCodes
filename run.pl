@@ -103,20 +103,20 @@ sub createMaps {
 		my $tmp2;
 		my $tmp3;
 		if($weighted == 0) {
-			$line =~ s/(\w+)\s+(\w+)\s+//;
+			$line =~ s/(\S+)\s+(\S+)\s*//;
 			$tmp1 = $1;
 			$tmp2 = $2;
 		} else {
-			$line =~ s/(\w+)\s+(\w+)\s+(\S+)\s+//;
+			$line =~ s/(\S+)\s+(\S+)\s+(\S+)\s*//;
 			$tmp1 = $1;
 			$tmp2 = $2;
 			$tmp3 = $3;
 		}
 
-		if(!grep{$_ =~ /$tmp1/} @map) {
+		if(!grep{$_ =~ /^$tmp1$/} @map) {
 			push @map, $tmp1;
 		}
-		if(!grep{$_ =~ /$tmp2/} @map) {
+		if(!grep{$_ =~ /^$tmp2$/} @map) {
 			push @map, $tmp2;
 		}
 		if($weighted == 1 and !exists $weightMap{$tmp3}) {
@@ -152,25 +152,23 @@ sub createAdjacency {
 		my $destination;
 		my $weight;
 		if($weighted == 1) {
-			$line =~ s/(\w+)\s+(\w+)\s+(\S+)\s+//;
+			$line =~ s/(\S+)\s+(\S+)\s+(\S+)\s*//;
 			$source = $1;
 			$destination = $2;
 			$weight = $3;
 		} else {
-			$line =~ s/(\w+)\s+(\w+)\s+//;
+			$line =~ s/(\S+)\s+(\S+)\s*//;
 			$source = $1;
 			$destination = $2;
 		}
 
 		my $pos;
-		($pos) = grep{ $map[$_] =~ /$source/} 0 .. $#map;
+		($pos) = grep{ $map[$_] =~ m/^$source$/} 0 .. $#map;
 		$adjacency[$lineNumber][0] = $pos;
-		($pos) = grep{ $map[$_] =~ /$destination/} 0 .. $#map;
+		($pos) = grep{ $map[$_] =~ m/^$destination$/} 0 .. $#map;
 		$adjacency[$lineNumber][1] = $pos;
 		if($weighted == 1) {
 			$adjacency[$lineNumber][2] = $weightMap{$weight};
-			#($pos) = grep{ $weightMap[$_] =~ /$weight/} 0 .. $#weightMap;
-			#$adjacency[$lineNumber][2] = $pos;
 		}
 		$lineNumber++;
 	}
