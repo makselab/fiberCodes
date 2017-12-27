@@ -19,6 +19,8 @@ sub main {
 	my @adjacency = createAdjacency(@map);
 	createConfigurationFile(scalar @map, @adjacency);
 	my $codeOutput = runCode();
+	my %groupoids = parseCodeOutput($codeOutput, @map);
+	createOutput(%groupoids);
 }
 
 sub readCLInput {
@@ -165,7 +167,7 @@ sub createConfigurationFile {
 	# 3: weighted/not weighted
 	# 4: number of weights
 	# 5..inf: adjacency matrix
-	open (adjacencyFile, '>', $outputFile);
+	open (adjacencyFile, '>', "adjacency.txt");
 	print adjacencyFile $size;
 	print adjacencyFile "\n$directed\n";
 	print adjacencyFile "$weighted\n";
@@ -189,4 +191,47 @@ sub runCode {
 	my $duration = time - $start;
 	print "Execution time: $duration s\n";
 	return $codeOutput;
+}
+
+sub parseCodeOutput {
+	my ($codeOutput, @map) = @_;
+	print("Creating output\n");
+	my @output = ();
+	my @data = split /\n/, $codeOutput;
+	my $i = 0;
+	foreach(@data) {
+		my @tmp = split /\t/, $_;
+		$output[$i][0] = $tmp[0];
+		$output[$i++][1] = $tmp[1];
+	}
+
+	my %groupoids;
+
+	for($i = 0; $i < scalar @output; $i++) {
+		push(@{$groupoids{$output[$i][1]}}, $map[$output[$i][0]]);
+	}
+	return %groupoids;
+}
+
+sub createOutput {
+	my %groupoids = @_;
+	my $numberOfGroupoids = keys %groupoids;
+	for(my $i = 0; $i < $numberOfGroupoids; $i++) {
+		print("$i:\t");
+		for(my $j = 0; $j < scalar @{$groupoids{$i}}; $j++) {
+			print("$groupoids{$i}[$j]\t");
+		}
+		print("\n");
+	}
+	if($outputFile ne "") {
+		open (outputFile, '>', $outputFile);
+		for(my $i = 0; $i < $numberOfGroupoids; $i++) {
+			print(outputFile "$i:\t");
+			for(my $j = 0; $j < scalar @{$groupoids{$i}}; $j++) {
+				print(outputFile "$groupoids{$i}[$j]\t");
+			}
+			print(outputFile "\n");
+		}
+		close(outputFile)
+	}
 }
