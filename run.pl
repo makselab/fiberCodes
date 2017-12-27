@@ -15,11 +15,11 @@ main();
 sub main {
 	readCLInput();
 	readInputFile();
-	my @map = createMap();
-	my @adjacency = createAdjacency(@map);
-	createConfigurationFile(scalar @map, @adjacency);
+	my ($map_ref, $weightMap_ref) = createMaps();
+	my @adjacency = createAdjacency($map_ref, $weightMap_ref);
+	createConfigurationFile($map_ref, $weightMap_ref, @adjacency);
 	my $codeOutput = runCode();
-	my %groupoids = parseCodeOutput($codeOutput, @map);
+	my %groupoids = parseCodeOutput($codeOutput, $map_ref);
 	createOutput(%groupoids);
 }
 
@@ -63,6 +63,8 @@ sub readCLInput {
 		print("-inputFrom filename\t- Path to file with connections to setup adjacency\n");
 		print("-outputTo filename\t- Path to output file\n");
 	}
+
+	print("Printing insterted parameters for script to run...\n");
 	print("help\t\t= $help\n");
 	print("directed\t= $directed\n");
 	print("weighted\t= $weighted\n");
@@ -84,6 +86,7 @@ sub readInputFile {
 	@globalInput = split(/\n/, $input);
 
 	#print input
+	print("Printing input file.\n");
 	foreach my $line (@globalInput) {
 		print("$line\n");
 	}
@@ -91,35 +94,57 @@ sub readInputFile {
 	return;
 }
 
-sub createMap {
+sub createMaps {
 	my @tmpInput = @globalInput;
-	my @map = ();
-	my $numberofnames = 0;
+	my @map;
+	my @weightMap;
 	foreach my $line (@tmpInput) {
-		$line =~ s/(\w+)\s+(\w+)\s+//;
-		my $tmp1 = $1;
-		my $tmp2 = $2;
+		my $tmp1;
+		my $tmp2;
+		my $tmp3;
+		if($weighted == 0) {
+			$line =~ s/(\w+)\s+(\w+)\s+//;
+			$tmp1 = $1;
+			$tmp2 = $2;
+		} else {
+			$line =~ s/(\w+)\s+(\w+)\s+(\S+)\s+//;
+			$tmp1 = $1;
+			$tmp2 = $2;
+			$tmp3 = $3;
+		}
 
 		if(!grep{$_ =~ /$tmp1/} @map) {
-			@map[$numberofnames++] = $tmp1;
+			push @map, $tmp1;
 		}
 		if(!grep{$_ =~ /$tmp2/} @map) {
-			@map[$numberofnames++] = $tmp2;
+			push @map, $tmp2;
+		}
+		if($weighted == 1 and !grep{$_ =~ /$tmp3/} @weightMap) {
+			push @weightMap, $tmp3;
 		}
 	}
 	@map = sort values @map;
 
-	#print map
+	#print maps
+	print("Printing map of all possible nodes...\n");
 	my $i = 0;
 	foreach my $entry (@map) {
 		print("$i\t- $entry\n");
 		$i++;
 	}
-	return @map;
+	print("Printing map of all possible weights...\n");
+	my $i = 0;
+	foreach my $entry (@weightMap) {
+		print("$i\t- $entry\n");
+		$i++;
+	}
+	return (\@map, \@weightMap);
 }
 
 sub createAdjacency {
-	my @map = @_;
+	my ($map_ref, $weightMap_ref) = @_;
+	my @map = @$map_ref;
+	my @weightMap = @$weightMap_ref;
 	my @tmpInput = @globalInput;
 	my @adjacency = ();
 
@@ -145,20 +170,31 @@ sub createAdjacency {
 		($pos) = grep{ $map[$_] =~ /$destination/} 0 .. $#map;
 		$adjacency[$lineNumber][1] = $pos;
 		if($weighted == 1) {
-		#	$adjacency[$lineNumber][2] = $weightMap{$weight};
+			($pos) = grep{ $weightMap[$_] =~ /$weight/} 0 .. $#weightMap;
+			$adjacency[$lineNumber][2] = $pos;
 		}
 		$lineNumber++;
 	}
 
-	for(my $i = 0; $i < $lineNumber; $i++) {
-		print("$adjacency[$i][0]\t$adjacency[$i][1]\n");
+
+	print("Printing adjacency matrix...\n");
+	if($weighted == 0) {
+		for(my $i = 0; $i < $lineNumber; $i++) {
+			print("$adjacency[$i][0]\t$adjacency[$i][1]\n");
+		}
+	} else {
+		for(my $i = 0; $i < $lineNumber; $i++) {
+			print("$adjacency[$i][0]\t$adjacency[$i][1]\t$adjacency[$i][2]\n");
+		}
 	}
 
 	return @adjacency;
 }
 
 sub createConfigurationFile {
-	my ($size, @adjacency) = @_;
+	my ($map_ref, $weightMap_ref, @adjacency) = @_;
+	my $numberOfNodes = scalar @$map_ref;
+	my $numberOfWeights = scalar @$weightMap_ref;
 	my $numberOfConnections = scalar @adjacency;
 	my $secondSize = @{$adjacency[0]};
 	# adjacency.txt structure
@@ -168,10 +204,10 @@ sub createConfigurationFile {
 	# 4: number of weights
 	# 5..inf: adjacency matrix
 	open (adjacencyFile, '>', "adjacency.txt");
-	print adjacencyFile $size;
+	print adjacencyFile $numberOfNodes;
 	print adjacencyFile "\n$directed\n";
 	print adjacencyFile "$weighted\n";
-	print adjacencyFile "1\n";
+	print adjacencyFile "$numberOfWeights\n";
 	for(my $i = 0; $i < $numberOfConnections; $i++) {
 			for(my $j = 0; $j < $secondSize; $j++) {
 					print adjacencyFile "$adjacency[$i][$j]\t";
@@ -194,7 +230,9 @@ sub runCode {
 }
 
 sub parseCodeOutput {
-	my ($codeOutput, @map) = @_;
+	print("Parsing code output...\n");
+	my ($codeOutput, $map_ref) = @_;
+	my @map = @$map_ref;
 	print("Creating output\n");
 	my @output = ();
 	my @data = split /\n/, $codeOutput;
@@ -216,6 +254,7 @@ sub parseCodeOutput {
 sub createOutput {
 	my %groupoids = @_;
 	my $numberOfGroupoids = keys %groupoids;
+	print("Printing parsed code output...\n");
 	for(my $i = 0; $i < $numberOfGroupoids; $i++) {
 		print("$i:\t");
 		for(my $j = 0; $j < scalar @{$groupoids{$i}}; $j++) {
