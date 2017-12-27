@@ -129,7 +129,7 @@ sub createMaps {
 	print("Printing map of all possible nodes...\n");
 	my $i = 0;
 	foreach my $entry (@map) {
-		print("$i\t- $entry\n");
+		print("$i\t- \"$entry\"\n");
 		$i++;
 	}
 	print("Printing map of all possible weights...\n");
