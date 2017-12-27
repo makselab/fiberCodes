@@ -44,7 +44,7 @@ int main() {
 		It improves readability and simpliness only paying with the strange enumeration of array */
 		vector< vector<int> > vectors(numberOfNodes);
 		for(int i = 0; i < numberOfNodes; i++)
-			vectors[i].resize(numberOfColors * weighted?numberOfWeights:1);
+			vectors[i].resize(numberOfColors * (weighted?numberOfWeights:1));
 
 		calculateVectors(connections, nodeColors, vectors, directed, weighted?numberOfWeights:0);
 		int nOC = classifyNodes(vectors, nodeColors);
@@ -120,13 +120,25 @@ void readConnectionsFile(vector< vector<int> > &connections, bool weighted) {
 void calculateVectors(vector< vector<int> > connections, vector<int> nodeColors, vector< vector<int> > &vectors, bool directed, int numberOfWeights) {
 	for(int i = 0; i < connections.size(); i++) {
 		if(directed == false) {
-			vectors[connections[i][0]][nodeColors[connections[i][1]] * numberOfWeights + connections[i][2]]++;
+			int pos = 0;
+			if(numberOfWeights == 0) {
+				pos = nodeColors[connections[i][1]];
+			} else {
+				pos = nodeColors[connections[i][1]] * numberOfWeights + connections[i][2];
+			}
+			vectors[connections[i][0]][pos]++;
 		}
-		vectors[connections[i][1]][nodeColors[connections[i][0]] * numberOfWeights + connections[i][2]]++;
+		int pos = 0;
+		if(numberOfWeights == 0) {
+			pos = nodeColors[connections[i][0]];
+		} else {
+			pos = nodeColors[connections[i][0]] * numberOfWeights + connections[i][2];
+		}
+		vectors[connections[i][1]][pos]++;
 	}
-/*
+
 	// output vector value
-	for(int i = 0; i < vectors.size(); i++) {
+	/*for(int i = 0; i < vectors.size(); i++) {
 		for(int j = 0; j < vectors[0].size(); j++) {
 			cout << "vectors[" << i << "][" << j << "] = " << vectors[i][j] << "\t";
 		}
