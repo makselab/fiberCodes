@@ -62,6 +62,7 @@ sub readCLInput {
 		print("-gephi\t\t\t- Create output in a gephi format\n");
 		print("-inputFrom filename\t- Path to file with connections to setup adjacency\n");
 		print("-outputTo filename\t- Path to output file\n");
+		exit;
 	}
 
 	print("Printing insterted parameters for script to run...\n");
@@ -76,7 +77,8 @@ sub readCLInput {
 sub readInputFile {
 	if($inputFile eq "") {
 		print("No input file path\n");
-		return;
+		print("Try using \"-help\" key for usage\n");
+		exit;
 	}
 	local $/=undef;
 	open(FID, $inputFile)
