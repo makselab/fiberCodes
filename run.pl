@@ -19,8 +19,10 @@ sub main {
 	my @adjacency = createAdjacency($map_ref, $weightMap_ref);
 	createConfigurationFile($map_ref, $weightMap_ref, @adjacency);
 	my $codeOutput = runCode();
-	my %groupoids = parseCodeOutput($codeOutput, $map_ref);
+	my $parsedOutput_ref = parseCodeOutput($codeOutput);
+	my %groupoids = formGroupoids($parsedOutput_ref, $map_ref);
 	createOutput(%groupoids);
+	createGephiOutput($parsedOutput_ref, $map_ref, @adjacency);
 }
 
 sub readCLInput {
@@ -59,7 +61,7 @@ sub readCLInput {
 		print("-help\t\t\t- Prints this help message with usage\n");
 		print("-directed\t\t- Initially we think that graph is undirected, sets it to directed\n");
 		print("-weighted\t\t- Initially we think that graph is unweighted, sets it to weighted\n");
-		print("-gephi\t\t\t- Create output in a gephi format\n");
+		print("-gephi\t\t\t- Create output in a gephi format. Uses outputTo file directory. If not specified, puts it together with the code\n");
 		print("-inputFrom filename\t- Path to file with connections to setup adjacency\n");
 		print("-outputTo filename\t- Path to output file\n");
 		exit;
@@ -227,14 +229,13 @@ sub runCode {
 	my $codeOutput = qx("./grcode");
 	my $duration = time - $start;
 	print "Execution time: $duration s\n";
+	# TODO: check if code actually gave positive result
 	return $codeOutput;
 }
 
 sub parseCodeOutput {
 	print("Parsing code output...\n");
-	my ($codeOutput, $map_ref) = @_;
-	my @map = @$map_ref;
-	print("Creating output\n");
+	my ($codeOutput) = @_;
 	my @output = ();
 	my @data = split /\n/, $codeOutput;
 	my $i = 0;
@@ -244,10 +245,17 @@ sub parseCodeOutput {
 		$output[$i++][1] = $tmp[1];
 	}
 
+	return \@output;
+}
+
+sub formGroupoids {
+	my ($parsedOutput_ref, $map_ref) = @_;
+	my @parsedOutput = @$parsedOutput_ref;
+	my @map = @$map_ref;
 	my %groupoids;
 
-	for($i = 0; $i < scalar @output; $i++) {
-		push(@{$groupoids{$output[$i][1]}}, $map[$output[$i][0]]);
+	for(my $i = 0; $i < scalar @parsedOutput; $i++) {
+		push(@{$groupoids{$parsedOutput[$i][1]}}, $map[$parsedOutput[$i][0]]);
 	}
 	return %groupoids;
 }
@@ -272,6 +280,45 @@ sub createOutput {
 			}
 			print(outputFile "\n");
 		}
-		close(outputFile)
+		close(outputFile);
 	}
+}
+
+sub createGephiOutput {
+	my ($parsedOutput_ref, $map_ref, @adjacency) = @_;
+	my @parsedOutput = @$parsedOutput_ref;
+	my @map = @$map_ref;
+	
+	my $gephiOutputFile;
+	if($outputFile ne "") {
+		$gephiOutputFile = $outputFile;
+		$gephiOutputFile =~ s/\.[\w\W]+$//;
+	} else {
+		$gephiOutputFile = "gephi";
+	}
+
+	open (nodesFile, '>', $gephiOutputFile . "_nodes.csv");
+	print(nodesFile "Id,Label,modularity_class\n");
+	for(my $i = 0; $i < scalar @map; $i++) {
+		print(nodesFile "$i,$map[$i],$parsedOutput[$i][1]\n");
+	}
+	close(nodesFile);
+
+	open (edgesFile, '>', $gephiOutputFile . "_edges.csv");
+	print(edgesFile "Source,Target,Type");
+	if($weighted) {print(edgesFile ",Weight\n");}
+	else {print(edgesFile "\n");}
+	my $type;
+	if($directed) {$type = "directed";}
+	else {$type = "undirected";}
+	for(my $i = 0; $i < scalar @adjacency; $i++) {
+		print(edgesFile "$adjacency[$i][0],$adjacency[$i][1],$type");
+		if($weighted) {
+			#we add 1 here, because gephi doesn't like when weight is equal to 0
+			my $gephiWeight = $adjacency[$i][2] + 1;
+			print(edgesFile ",$gephiWeight");
+		}
+		print(edgesFile "\n");
+	}
+	close(edgesFile);
 }
