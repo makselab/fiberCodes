@@ -10,6 +10,7 @@ void calculateVectors(vector< vector<int> > connections, vector<int> nodeColors,
 int classifyNodes(vector< vector<int> > vectors, vector<int> &nodeColors);
 void readConfigFile(int &numberOfNodes, int &numberOfConnections, bool &directed, bool &weighted, int &numberOfWeights);
 void readConnectionsFile(vector< vector<int> > &connections, bool weighted);
+void findGroupoids(int numberOfNodes, vector< vector<int> > connections, bool directed, bool weighted, int numberOfWeights, vector<int> &nodeColors);
 
 int main() {
 	int numberOfNodes;
@@ -31,11 +32,17 @@ int main() {
 		cout << endl;
 	}*/
 
-	// defining all colors initially to be same
 	// different colors here just mean different type of nodes
 	vector<int> nodeColors(numberOfNodes, 0);
-	int numberOfColors = 1;
+	findGroupoids(numberOfNodes, connections, directed, weighted, numberOfWeights, nodeColors);
 
+	for(int i = 0; i < numberOfNodes; i++)
+		cout << i << "\t" << nodeColors[i] << endl;
+}
+
+void findGroupoids(int numberOfNodes, vector< vector<int> > connections, bool directed, bool weighted, int numberOfWeights, vector<int> &nodeColors) {
+	// defining all colors initially to be same
+	int numberOfColors = 1;
 	while(1) {
 		// create 2D vector array to store all vectors belonging to each node
 		/* Explanation why array is of size numberOfNodes x (numberOfColors * numberOfWeights). There are two ways how to do it.
@@ -52,8 +59,6 @@ int main() {
 		else {numberOfColors = nOC;}
 	}
 
-	for(int i = 0; i < numberOfNodes; i++)
-		cout << i << "\t" << nodeColors[i] << endl;
 }
 
 void readConfigFile(int &numberOfNodes, int &numberOfConnections, bool &directed, bool &weighted, int &numberOfWeights) {
