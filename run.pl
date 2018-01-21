@@ -5,7 +5,7 @@ use warnings;
 my $help = 0;
 my $directed = 0;
 my $weighted = 0;
-my $operons = 0;
+my $operonInput = 0;
 my $inputFile = "";
 my $gephi = 0;
 my $outputFile = "";
@@ -13,6 +13,8 @@ my @globalInput;
 
 my @map;
 my %weightMap;
+my @transcribingGenes;
+my %operonMap;
 my @adjacency;
 main();
 
@@ -47,8 +49,10 @@ sub readCLInput {
 			$gephi = 1;
 			next;
 		}
-		if($arg eq "-operons") {
-			$operons = 1;;
+		if($arg eq "-operon") {
+			$operonInput = 1;
+			$weighted = 1;
+			$directed = 1;
 			next;
 		}
 		if($arg eq "-inputFrom") {
@@ -70,7 +74,7 @@ sub readCLInput {
 		print("-directed\t\t- Initially we think that graph is undirected, sets it to directed\n");
 		print("-weighted\t\t- Initially we think that graph is unweighted, sets it to weighted\n");
 		print("-gephi\t\t\t- Create output in a gephi format. Uses outputTo file directory. If not specified, puts it together with the code\n");
-		print("-operon\t\t\t- Using input from regulonDB operons");
+		print("-operon\t\t\t- Using input from regulonDB operons. Initializes weighed and directed itself\n");
 		print("-inputFrom filename\t- Path to file with connections to setup adjacency\n");
 		print("-outputTo filename\t- Path to output file\n");
 		exit;
@@ -81,7 +85,7 @@ sub readCLInput {
 	print("directed\t= $directed\n");
 	print("weighted\t= $weighted\n");
 	print("gephi\t\t= $gephi\n");
-	print("operons\t\t= $operons\n");
+	print("operon\t\t= $operonInput\n");
 	print("inputFile\t= $inputFile\n");
 	print("outputFile\t= $outputFile\n");
 }
@@ -97,6 +101,7 @@ sub readInputFile {
 		or die "Failed to open $inputFile: $!\n";
 	my $input = <FID>;
 	close(FID);
+	$input = lc($input);
 	@globalInput = split(/\n/, $input);
 
 	@globalInput = grep { $_ ne "" } @globalInput;
@@ -111,20 +116,41 @@ sub readInputFile {
 }
 
 sub createMaps {
+	print("Creating map\n");
 	my @tmpInput = @globalInput;
 	foreach my $line (@tmpInput) {
 		my $tmp1;
 		my $tmp2;
 		my $tmp3;
-		if($weighted == 0) {
-			$line =~ s/(\S+)\s+(\S+)\s*//;
-			$tmp1 = $1;
-			$tmp2 = $2;
+		if($operonInput == 0) {
+			if($weighted == 0) {
+				$line =~ s/(\S+)\s+(\S+)\s*//;
+				$tmp1 = $1;
+				$tmp2 = $2;
+			} else {
+				$line =~ s/(\S+)\s+(\S+)\s+(\S+)\s*//;
+				$tmp1 = $1;
+				$tmp2 = $2;
+				$tmp3 = $3;
+			}
 		} else {
-			$line =~ s/(\S+)\s+(\S+)\s+(\S+)\s*//;
-			$tmp1 = $1;
-			$tmp2 = $2;
-			$tmp3 = $3;
+			$line =~ s/^(\S+)\s+([\S\s]+)\[([\s\S]+)\]\s+([+-?]{1,2})([\S\s]+)$//;
+			my $transcribingGene = $1;
+			my $operon = $2;
+			my @genes = split /, /, $3;
+			my $weight = $4;
+			$tmp1 = $transcribingGene;
+			$tmp2 = $operon;
+			$tmp3 = $weight;
+			if(!grep{$_ =~ /^$transcribingGene$/} @transcribingGenes) {
+				push @transcribingGenes, $transcribingGene;
+			}
+			# if operon consists of more, then one gene, we want to add it to operon map
+			if((scalar @genes > 1) and !(exists $operonMap{$operon})) {
+				foreach my $gene (@genes) {
+					push(@{$operonMap{$operon}}, $gene);
+				}
+			}
 		}
 
 		if(!grep{$_ =~ /^$tmp1$/} @map) {
@@ -150,6 +176,19 @@ sub createMaps {
 	foreach my $entry (keys %weightMap) {
 		print("$weightMap{$entry}\t - $entry\n");
 	}
+	print("Printing map of all operons...\n");
+	foreach my $operon (sort keys %operonMap) {
+		print("$operon:\t");
+		my $numberOfGenes = @{$operonMap{$operon}};
+		for(my $i = 0; $i < $numberOfGenes; $i++) {
+			print("$operonMap{$operon}[$i], ");
+		}
+		print("\n");
+	}
+	print("Printing map of transcribing genes...\n");
+	for(my $i = 0; $i < scalar @transcribingGenes; $i++) {
+		print("$transcribingGenes[$i]\n");
+	}
 	return;
 }
 
@@ -161,15 +200,22 @@ sub createAdjacency {
 		my $source;
 		my $destination;
 		my $weight;
-		if($weighted == 1) {
-			$line =~ s/(\S+)\s+(\S+)\s+(\S+)\s*//;
-			$source = $1;
-			$destination = $2;
-			$weight = $3;
+		if($operonInput == 0) {
+			if($weighted == 1) {
+				$line =~ s/(\S+)\s+(\S+)\s+(\S+)\s*//;
+				$source = $1;
+				$destination = $2;
+				$weight = $3;
+			} else {
+				$line =~ s/(\S+)\s+(\S+)\s*//;
+				$source = $1;
+				$destination = $2;
+			}
 		} else {
-			$line =~ s/(\S+)\s+(\S+)\s*//;
+			$line =~ s/^(\S+)\s+([\S\s]+)\[([\s\S]+)\]\s+([+-?]{1,2})([\S\s]+)$//;
 			$source = $1;
 			$destination = $2;
+			$weight = $4;
 		}
 
 		my $pos;
