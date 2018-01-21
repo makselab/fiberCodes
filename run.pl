@@ -5,6 +5,7 @@ use warnings;
 my $help = 0;
 my $directed = 0;
 my $weighted = 0;
+my $operons = 0;
 my $inputFile = "";
 my $gephi = 0;
 my $outputFile = "";
@@ -43,6 +44,10 @@ sub readCLInput {
 			$gephi = 1;
 			next;
 		}
+		if($arg eq "-operons") {
+			$operons = 1;;
+			next;
+		}
 		if($arg eq "-inputFrom") {
 			$inputFile = shift @ARGV;
 			next;
@@ -62,6 +67,7 @@ sub readCLInput {
 		print("-directed\t\t- Initially we think that graph is undirected, sets it to directed\n");
 		print("-weighted\t\t- Initially we think that graph is unweighted, sets it to weighted\n");
 		print("-gephi\t\t\t- Create output in a gephi format. Uses outputTo file directory. If not specified, puts it together with the code\n");
+		print("-operon\t\t\t- Using input from regulonDB operons");
 		print("-inputFrom filename\t- Path to file with connections to setup adjacency\n");
 		print("-outputTo filename\t- Path to output file\n");
 		exit;
@@ -72,6 +78,7 @@ sub readCLInput {
 	print("directed\t= $directed\n");
 	print("weighted\t= $weighted\n");
 	print("gephi\t\t= $gephi\n");
+	print("operons\t\t= $operons\n");
 	print("inputFile\t= $inputFile\n");
 	print("outputFile\t= $outputFile\n");
 }
