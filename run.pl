@@ -11,19 +11,21 @@ my $gephi = 0;
 my $outputFile = "";
 my @globalInput;
 
+my @map;
+my %weightMap;
 main();
 
 sub main {
 	readCLInput();
 	readInputFile();
-	my ($map_ref, $weightMap_ref) = createMaps();
-	my @adjacency = createAdjacency($map_ref, $weightMap_ref);
-	createConfigurationFile($map_ref, $weightMap_ref, @adjacency);
+	createMaps();
+	my @adjacency = createAdjacency();
+	createConfigurationFile(@adjacency);
 	my $codeOutput = runCode();
 	my $parsedOutput_ref = parseCodeOutput($codeOutput);
-	my %groupoids = formGroupoids($parsedOutput_ref, $map_ref);
+	my %groupoids = formGroupoids($parsedOutput_ref);
 	createOutput(%groupoids);
-	createGephiOutput($parsedOutput_ref, $map_ref, @adjacency);
+	createGephiOutput($parsedOutput_ref, @adjacency);
 }
 
 sub readCLInput {
@@ -109,8 +111,6 @@ sub readInputFile {
 
 sub createMaps {
 	my @tmpInput = @globalInput;
-	my @map;
-	my %weightMap;
 	foreach my $line (@tmpInput) {
 		my $tmp1;
 		my $tmp2;
@@ -149,13 +149,10 @@ sub createMaps {
 	foreach my $entry (keys %weightMap) {
 		print("$weightMap{$entry}\t - $entry\n");
 	}
-	return (\@map, \%weightMap);
+	return;
 }
 
 sub createAdjacency {
-	my ($map_ref, $weightMap_ref) = @_;
-	my @map = @$map_ref;
-	my %weightMap = %$weightMap_ref;
 	my @tmpInput = @globalInput;
 	my @adjacency = ();
 
@@ -202,9 +199,9 @@ sub createAdjacency {
 }
 
 sub createConfigurationFile {
-	my ($map_ref, $weightMap_ref, @adjacency) = @_;
-	my $numberOfNodes = scalar @$map_ref;
-	my $numberOfWeights = scalar %$weightMap_ref;
+	my (@adjacency) = @_;
+	my $numberOfNodes = scalar @map;
+	my $numberOfWeights = scalar %weightMap;
 	my $numberOfConnections = scalar @adjacency;
 	my $secondSize = @{$adjacency[0]};
 	# adjacency.txt structure
@@ -256,9 +253,8 @@ sub parseCodeOutput {
 }
 
 sub formGroupoids {
-	my ($parsedOutput_ref, $map_ref) = @_;
+	my ($parsedOutput_ref) = @_;
 	my @parsedOutput = @$parsedOutput_ref;
-	my @map = @$map_ref;
 	my %groupoids;
 
 	for(my $i = 0; $i < scalar @parsedOutput; $i++) {
@@ -292,9 +288,8 @@ sub createOutput {
 }
 
 sub createGephiOutput {
-	my ($parsedOutput_ref, $map_ref, @adjacency) = @_;
+	my ($parsedOutput_ref, @adjacency) = @_;
 	my @parsedOutput = @$parsedOutput_ref;
-	my @map = @$map_ref;
 	
 	my $gephiOutputFile;
 	if($outputFile ne "") {
