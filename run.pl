@@ -13,19 +13,20 @@ my @globalInput;
 
 my @map;
 my %weightMap;
+my @adjacency;
 main();
 
 sub main {
 	readCLInput();
 	readInputFile();
 	createMaps();
-	my @adjacency = createAdjacency();
-	createConfigurationFile(@adjacency);
+	createAdjacency();
+	createConfigurationFile();
 	my $codeOutput = runCode();
 	my $parsedOutput_ref = parseCodeOutput($codeOutput);
 	my %groupoids = formGroupoids($parsedOutput_ref);
 	createOutput(%groupoids);
-	createGephiOutput($parsedOutput_ref, @adjacency);
+	createGephiOutput($parsedOutput_ref);
 }
 
 sub readCLInput {
@@ -154,7 +155,6 @@ sub createMaps {
 
 sub createAdjacency {
 	my @tmpInput = @globalInput;
-	my @adjacency = ();
 
 	my $lineNumber = 0;
 	foreach my $line (@tmpInput) {
@@ -195,11 +195,10 @@ sub createAdjacency {
 		}
 	}
 
-	return @adjacency;
+	return;
 }
 
 sub createConfigurationFile {
-	my (@adjacency) = @_;
 	my $numberOfNodes = scalar @map;
 	my $numberOfWeights = scalar %weightMap;
 	my $numberOfConnections = scalar @adjacency;
@@ -222,6 +221,7 @@ sub createConfigurationFile {
 			print adjacencyFile "\n";
 	}
 	close (adjacencyFile); 
+	return;
 }
 
 sub runCode {
@@ -288,7 +288,7 @@ sub createOutput {
 }
 
 sub createGephiOutput {
-	my ($parsedOutput_ref, @adjacency) = @_;
+	my ($parsedOutput_ref) = @_;
 	my @parsedOutput = @$parsedOutput_ref;
 	
 	my $gephiOutputFile;
