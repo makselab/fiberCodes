@@ -16,6 +16,7 @@ my %weightMap;
 # all operon commits are done in a bit of a rush. I don`t like it architecturewise
 # TODO: rethink operon commits
 my %operonsToChange;
+my %operonMap;
 my @adjacency;
 main();
 
@@ -120,7 +121,6 @@ sub createMaps {
 	print("Creating map\n");
 	my @tmpInput = @globalInput;
 	my @transcribingGenes;
-	my %operonMap;
 	foreach my $line (@tmpInput) {
 		my $tmp1;
 		my $tmp2;
@@ -177,7 +177,7 @@ sub createMaps {
 				my (@ret) = grep{ $operon[$_] =~ /^$transcribingGenes[$i]$/ } 0 .. $#operon;
 				if(scalar @ret != 0) {
 					$operonsToChange{$entry} = $transcribingGenes[$i];
-					splice(@{$operonMap{$entry}}, @ret[0], 1);
+					splice(@{$operonMap{$entry}}, $ret[0], 1);
 				}
 			}
 		}
@@ -340,7 +340,18 @@ sub formGroupoids {
 	my %groupoids;
 
 	for(my $i = 0; $i < scalar @parsedOutput; $i++) {
-		push(@{$groupoids{$parsedOutput[$i][1]}}, $map[$parsedOutput[$i][0]]);
+		my $entry = $map[$parsedOutput[$i][0]];
+		my $newEntry = "$entry";
+		if(exists $operonMap{$entry}) {
+			$newEntry = $newEntry . "\[";
+			for(my $i = 0; $i < @{$operonMap{$entry}} - 1; $i++) {
+				$newEntry = $newEntry . $operonMap{$entry}[$i] . "\t";
+				#print("$operonMap{$entry}[$i]\t");
+			}
+			$newEntry = $newEntry . $operonMap{$entry}[@{$operonMap{$entry}} - 1] . "\]";
+			print("$newEntry\n");
+		}
+		push(@{$groupoids{$parsedOutput[$i][1]}}, $newEntry);
 	}
 	return %groupoids;
 }
