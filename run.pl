@@ -13,8 +13,9 @@ my @globalInput;
 
 my @map;
 my %weightMap;
-my @transcribingGenes;
-my %operonMap;
+# all operon commits are done in a bit of a rush. I don`t like it architecturewise
+# TODO: rethink operon commits
+my %operonsToChange;
 my @adjacency;
 main();
 
@@ -118,6 +119,8 @@ sub readInputFile {
 sub createMaps {
 	print("Creating map\n");
 	my @tmpInput = @globalInput;
+	my @transcribingGenes;
+	my %operonMap;
 	foreach my $line (@tmpInput) {
 		my $tmp1;
 		my $tmp2;
@@ -146,6 +149,7 @@ sub createMaps {
 				push @transcribingGenes, $transcribingGene;
 			}
 			# if operon consists of more, then one gene, we want to add it to operon map
+			# TODO: there some operons listed with mistakes, think of more stable way to do this
 			if((scalar @genes > 1) and !(exists $operonMap{$operon})) {
 				foreach my $gene (@genes) {
 					push(@{$operonMap{$operon}}, $gene);
@@ -164,6 +168,20 @@ sub createMaps {
 		}
 	}
 	@map = sort values @map;
+	# if we are in operon case we create an array of operons, that have transcribing genes to be removed
+	# we actually remove all trinscribing genes from operon map to use this data
+	if($operonInput != 0) {
+		for(my $i = 0; $i < scalar @transcribingGenes; $i++) {
+			foreach my $entry (sort keys %operonMap) {
+				my @operon = @{$operonMap{$entry}};
+				my (@ret) = grep{ $operon[$_] =~ /^$transcribingGenes[$i]$/ } 0 .. $#operon;
+				if(scalar @ret != 0) {
+					$operonsToChange{$entry} = $transcribingGenes[$i];
+					splice(@{$operonMap{$entry}}, @ret[0], 1);
+				}
+			}
+		}
+	}
 
 	#print maps
 	print("Printing map of all possible nodes...\n");
@@ -176,18 +194,26 @@ sub createMaps {
 	foreach my $entry (keys %weightMap) {
 		print("$weightMap{$entry}\t - $entry\n");
 	}
-	print("Printing map of all operons...\n");
-	foreach my $operon (sort keys %operonMap) {
-		print("$operon:\t");
-		my $numberOfGenes = @{$operonMap{$operon}};
-		for(my $i = 0; $i < $numberOfGenes; $i++) {
-			print("$operonMap{$operon}[$i], ");
+	if($operonInput != 0) {
+		print("Printing map of all operons...\n");
+		foreach my $operon (sort keys %operonMap) {
+			print("$operon:\t");
+			my $numberOfGenes = @{$operonMap{$operon}};
+			for(my $i = 0; $i < $numberOfGenes; $i++) {
+				print("$operonMap{$operon}[$i], ");
+			}
+			print("\n");
 		}
-		print("\n");
-	}
-	print("Printing map of transcribing genes...\n");
-	for(my $i = 0; $i < scalar @transcribingGenes; $i++) {
-		print("$transcribingGenes[$i]\n");
+		print("Printing map of transcribing genes...\n");
+		for(my $i = 0; $i < scalar @transcribingGenes; $i++) {
+			print("$transcribingGenes[$i]\n");
+		}
+		print("Printing all operons that have transcribing genes change...\n");
+		my $i = 0;
+		foreach (sort keys %operonsToChange) {
+			print("$i:\toperon = $_, gene = $operonsToChange{$_}\n");
+			$i++;
+		}
 	}
 	return;
 }
@@ -226,9 +252,19 @@ sub createAdjacency {
 		if($weighted == 1) {
 			$adjacency[$lineNumber][2] = $weightMap{$weight};
 		}
+		if($operonInput != 0) {
+			if(exists $operonsToChange{$destination}) {
+				#if we are here. we need to add extra line to adjacency with the same weight and destination as a transcribing gene from operon
+				$lineNumber++;
+				($pos) = grep{ $map[$_] =~ m/^$source$/} 0 .. $#map;
+				$adjacency[$lineNumber][0] = $pos;
+				($pos) = grep{ $map[$_] =~ m/^$operonsToChange{$destination}$/} 0 .. $#map;
+				$adjacency[$lineNumber][1] = $pos;
+				$adjacency[$lineNumber][2] = $weightMap{$weight};
+			}
+		}
 		$lineNumber++;
 	}
-
 
 	print("Printing adjacency matrix...\n");
 	if($weighted == 0) {
