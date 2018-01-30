@@ -345,7 +345,7 @@ sub formGroupoids {
 		if(exists $operonMap{$entry}) {
 			$newEntry = $newEntry . "\[";
 			for(my $i = 0; $i < @{$operonMap{$entry}} - 1; $i++) {
-				$newEntry = $newEntry . $operonMap{$entry}[$i] . "\t";
+				$newEntry = $newEntry . $operonMap{$entry}[$i] . ",";
 				#print("$operonMap{$entry}[$i]\t");
 			}
 			$newEntry = $newEntry . $operonMap{$entry}[@{$operonMap{$entry}} - 1] . "\]";
