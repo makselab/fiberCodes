@@ -190,7 +190,6 @@ sub createMaps {
 		print("$i\t- \"$entry\"\n");
 		$i++;
 	}
-	print("$j\n");
 	foreach my $entry (keys %weightMap) {
 		print("$weightMap{$entry}\t - $entry\n");
 	}
