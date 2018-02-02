@@ -190,7 +190,7 @@ sub createMaps {
 		print("$i\t- \"$entry\"\n");
 		$i++;
 	}
-	print("Printing map of all possible weights...\n");
+	print("$j\n");
 	foreach my $entry (keys %weightMap) {
 		print("$weightMap{$entry}\t - $entry\n");
 	}
@@ -282,7 +282,7 @@ sub createAdjacency {
 
 sub createConfigurationFile {
 	my $numberOfNodes = scalar @map;
-	my $numberOfWeights = scalar %weightMap;
+	my $numberOfWeights = keys %weightMap;
 	my $numberOfConnections = scalar @adjacency;
 	my $secondSize = @{$adjacency[0]};
 	# adjacency.txt structure
@@ -322,6 +322,7 @@ sub runCode {
 sub parseCodeOutput {
 	print("Parsing code output...\n");
 	my ($codeOutput) = @_;
+	print("Code output:\n$codeOutput");
 	my @output = ();
 	my @data = split /\n/, $codeOutput;
 	my $i = 0;
