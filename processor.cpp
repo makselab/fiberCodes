@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <stack>
 
 Processor* Processor::p_Processor = 0;
 
@@ -41,14 +42,31 @@ void Processor::run() {
 		colorDistribution[nodeColors[i]]++;
 	}
 
-	/*cout << "Number of colors = " << numberOfColors << endl;
+	cout << "Number of colors = " << numberOfColors << endl;
 	for(int i = 0; i < numberOfColors; i++) {
 		cout << "Number of nodes of color " << i << "\t= " << colorDistribution[i] << endl;
-	}*/
+	}
 	/* Now we put all elements of unique colors together to the color -1*/
 	for(int i = 0; i < numberOfNodes; i++) {
 		if(colorDistribution[nodes[i].getColor()] == 1) {nodes[i].setColor(-1);}
 	}
+	for(int i = 0; i < numberOfNodes; i++) {
+		nodes[i].print();
+	}
+
+	/* Here we choose the node to start search */
+	stack<Node> colorfulNodes;
+	for(int i = 0; i < numberOfNodes; i++) {
+		if(nodes[i].getColor() != -1) {colorfulNodes.push(nodes[i]);}
+	}
+	cout << "Colorful nodes:" << endl;
+	while (!colorfulNodes.empty()) {
+		colorfulNodes.top().print();
+		colorfulNodes.pop();
+	}
+	blocks.push_back(BuildingBlock(0));
+	blocks[0].addNode(12);
+	blocks[0].print();
 }
 
 void Processor::addConnection(int source, int destination) {

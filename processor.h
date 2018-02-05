@@ -2,6 +2,7 @@
 #define PROCESSOR_H
 #include <vector>
 #include "node.h"
+#include "blocks.h"
 using namespace std;
 
 #define inputFile "adjacency.txt"
@@ -29,6 +30,8 @@ private:
 	void calculateVectors(vector<int> nodeColors, vector< vector<int> > &vectors);
 	int classifyNodes(vector< vector<int> > vectors, vector<int> &nodeColors);
 	int findGroupoids(int numberOfNodes, vector< vector<int> > groupoidConnections, vector<int> &nodeColors);
+private:
+	vector<BuildingBlock> blocks;
 public:
 	void run();
 };
