@@ -3,16 +3,14 @@
 
 //TODO: check for duplicated connections
 void Node::addInput(Node* entry) {
-	input.resize(input.size() + 1);
-	input[input.size() - 1] = entry;
+	input.push_back(entry);
 }
 
 void Node::addOutput(Node* entry) {
-	output.resize(output.size() + 1);
-	output[output.size() - 1] = entry;
+	output.push_back(entry);
 }
 
-void Node::printNode() {
+void Node::print() {
 	cout << "Printing node " << id << ". Color = " << color << endl;
 	cout << "Number of connections (i/o) = " << input.size() << "/" << output.size() << endl;
 }

@@ -12,7 +12,7 @@ public:
 	void setColor(int coloR) {color = coloR;}
 	void addInput(Node* entry);
 	void addOutput(Node* entry);
-	void printNode();
+	void print();
 private:
 	vector<Node*> output;
 	vector<Node*> input;
