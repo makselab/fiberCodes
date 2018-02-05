@@ -307,12 +307,10 @@ sub createConfigurationFile {
 
 sub runCode {
 	print("Compiling code\n");
-#	system("g++ -std=c++11 ./grcode.cpp -o grcode");
 	system("g++ -std=c++11 main.cpp processor.cpp -o exec");
 	# TODO: check if there are no "   " instead of '\t' symbol, cause it will cause problems
 	print("Running code\n");
 	my $start = time;
-#	my $codeOutput = qx("./grcode");
 	my $codeOutput = qx("./exec");
 	my $duration = time - $start;
 	print "Execution time: $duration s\n";
