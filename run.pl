@@ -307,7 +307,7 @@ sub createConfigurationFile {
 
 sub runCode {
 	print("Compiling code\n");
-	system("g++ -std=c++11 main.cpp processor.cpp -o exec");
+	system("g++ -std=c++11 main.cpp processor.cpp node.cpp blocks.cpp -o exec");
 	# TODO: check if there are no "   " instead of '\t' symbol, cause it will cause problems
 	print("Running code\n");
 	my $start = time;
