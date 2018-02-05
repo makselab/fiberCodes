@@ -28,18 +28,27 @@ Processor::Processor() {
 void Processor::run() {
 	// different colors here just mean different type of nodes
 	vector<int> nodeColors(numberOfNodes, 0);
-	findGroupoids(numberOfNodes, connections, nodeColors);
+	int numberOfColors = findGroupoids(numberOfNodes, connections, nodeColors);
 
 	for(int i = 0; i < numberOfNodes; i++) {
 		cout << i << "\t" << nodeColors[i] << endl;
 	}
 	
+	/* Here we find building blocks */
+	vector<int> colorDistribution(numberOfColors, 0);
 	for(int i = 0; i < numberOfNodes; i++) {
-		nodes[i].setNodeColor(nodeColors[i]);
+		nodes[i].setColor(nodeColors[i]);
+		colorDistribution[nodeColors[i]]++;
 	}
-	/*for(int i = 0; i < numberOfNodes; i++) {
-		nodes[i].printNode();
+
+	/*cout << "Number of colors = " << numberOfColors << endl;
+	for(int i = 0; i < numberOfColors; i++) {
+		cout << "Number of nodes of color " << i << "\t= " << colorDistribution[i] << endl;
 	}*/
+	/* Now we put all elements of unique colors together to the color -1*/
+	for(int i = 0; i < numberOfNodes; i++) {
+		if(colorDistribution[nodes[i].getColor()] == 1) {nodes[i].setColor(-1);}
+	}
 }
 
 void Processor::addConnection(int source, int destination) {
@@ -185,7 +194,7 @@ int Processor::classifyNodes(vector< vector<int> > vectors, vector<int> &nodeCol
 	return vectorTypes.size();
 }
 
-void Processor::findGroupoids(int numberOfNodes, vector< vector<int> > groupoidConnections, vector<int> &nodeColors) {
+int Processor::findGroupoids(int numberOfNodes, vector< vector<int> > groupoidConnections, vector<int> &nodeColors) {
 	// defining all colors initially to be same
 	int numberOfColors = 1;
 	while(1) {
@@ -203,4 +212,5 @@ void Processor::findGroupoids(int numberOfNodes, vector< vector<int> > groupoidC
 		if(nOC == numberOfColors) {break;}
 		else {numberOfColors = nOC;}
 	}
+	return numberOfColors;
 }

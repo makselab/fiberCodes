@@ -28,7 +28,7 @@ private:
 private:
 	void calculateVectors(vector<int> nodeColors, vector< vector<int> > &vectors);
 	int classifyNodes(vector< vector<int> > vectors, vector<int> &nodeColors);
-	void findGroupoids(int numberOfNodes, vector< vector<int> > groupoidConnections, vector<int> &nodeColors);
+	int findGroupoids(int numberOfNodes, vector< vector<int> > groupoidConnections, vector<int> &nodeColors);
 public:
 	void run();
 };

@@ -9,7 +9,7 @@ public:
 	Node(int iD, int coloR) : id(iD), color(coloR) {}
 	int getColor()	{return color;}
 	int getId()		{return id;}
-	void setNodeColor(int coloR) {color = coloR;}
+	void setColor(int coloR) {color = coloR;}
 	void addInput(Node* entry);
 	void addOutput(Node* entry);
 	void printNode();
