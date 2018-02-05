@@ -1,0 +1,33 @@
+#ifndef PROCESSOR_H
+#define PROCESSOR_H
+#include <vector>
+using namespace std;
+
+#define inputFile "adjacency.txt"
+
+class Processor {
+private:
+	Processor();
+	static Processor *p_Processor;
+public:
+	static Processor* getProcessor();
+private:
+	int numberOfNodes;
+	int numberOfConnections;
+	bool directed;
+	bool weighted;
+	int numberOfWeights;
+	void readConfigFile();
+private:
+	// create 2D vector array to store all connections
+	vector< vector<int> > connections;
+	void readConnectionsFile();
+private:
+	void calculateVectors(vector<int> nodeColors, vector< vector<int> > &vectors);
+	int classifyNodes(vector< vector<int> > vectors, vector<int> &nodeColors);
+	void findGroupoids(int numberOfNodes, vector< vector<int> > groupoidConnections, vector<int> &nodeColors);
+public:
+	void run();
+};
+
+#endif
