@@ -1,6 +1,7 @@
 #ifndef PROCESSOR_H
 #define PROCESSOR_H
 #include <vector>
+#include "node.h"
 using namespace std;
 
 #define inputFile "adjacency.txt"
@@ -13,7 +14,9 @@ public:
 	static Processor* getProcessor();
 private:
 	int numberOfNodes;
+	vector<Node> nodes;
 	int numberOfConnections;
+	void addConnection(int source, int destination);
 	bool directed;
 	bool weighted;
 	int numberOfWeights;

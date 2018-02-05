@@ -14,9 +14,14 @@ Processor* Processor::getProcessor() {
 
 Processor::Processor() {
 	readConfigFile();
+
 	connections.resize(numberOfConnections);
 	for(int i = 0; i < numberOfConnections; i++)
 		connections[i].resize(weighted?3:2);
+
+	for(int i = 0; i < numberOfNodes; i++)
+		nodes.push_back(Node(i, 0));
+
 	readConnectionsFile();
 }
 
@@ -25,28 +30,24 @@ void Processor::run() {
 	vector<int> nodeColors(numberOfNodes, 0);
 	findGroupoids(numberOfNodes, connections, nodeColors);
 
-	for(int i = 0; i < numberOfNodes; i++)
+	for(int i = 0; i < numberOfNodes; i++) {
 		cout << i << "\t" << nodeColors[i] << endl;
+	}
+	
+	for(int i = 0; i < numberOfNodes; i++) {
+		nodes[i].setNodeColor(nodeColors[i]);
+	}
+	/*for(int i = 0; i < numberOfNodes; i++) {
+		nodes[i].printNode();
+	}*/
 }
 
-void Processor::findGroupoids(int numberOfNodes, vector< vector<int> > groupoidConnections, vector<int> &nodeColors) {
-	// defining all colors initially to be same
-	int numberOfColors = 1;
-	while(1) {
-		// create 2D vector array to store all vectors belonging to each node
-		/* Explanation why array is of size numberOfNodes x (numberOfColors * numberOfWeights). There are two ways how to do it.
-		Either it can be done as a 3D array and then we will need two realisations for weighted and non-weighted design.
-		Or vectors themselves can be formed in a bit weird way, but we will classify nodes comparing vectors not worrying about their structure.
-		It improves readability and simpliness only paying with the strange enumeration of array */
-		vector< vector<int> > vectors(numberOfNodes);
-		for(int i = 0; i < numberOfNodes; i++)
-			vectors[i].resize(numberOfColors * (weighted?numberOfWeights:1));
-
-		calculateVectors(nodeColors, vectors);
-		int nOC = classifyNodes(vectors, nodeColors);
-		if(nOC == numberOfColors) {break;}
-		else {numberOfColors = nOC;}
+void Processor::addConnection(int source, int destination) {
+	if(source < 0 || source >= numberOfNodes || destination < 0 || destination >= numberOfNodes) {
+		cout << "Error: Trying to add connection out of bound. Number of nodes = " << numberOfNodes << ", source = " << source << ", destination = " << destination << endl;
 	}
+	nodes[source]     .addOutput(&nodes[destination]);
+	nodes[destination].addInput (&nodes[source]);
 }
 
 void Processor::readConfigFile() {
@@ -109,6 +110,7 @@ void Processor::readConnectionsFile() {
 			getline(config, line, '\n');
 			connections[i][2] = stoi(line);
 		}
+		addConnection(connections[i][0], connections[i][1]);
 		i++;
 	}
 	config.close();
@@ -181,4 +183,24 @@ int Processor::classifyNodes(vector< vector<int> > vectors, vector<int> &nodeCol
 	}
 
 	return vectorTypes.size();
+}
+
+void Processor::findGroupoids(int numberOfNodes, vector< vector<int> > groupoidConnections, vector<int> &nodeColors) {
+	// defining all colors initially to be same
+	int numberOfColors = 1;
+	while(1) {
+		// create 2D vector array to store all vectors belonging to each node
+		/* Explanation why array is of size numberOfNodes x (numberOfColors * numberOfWeights). There are two ways how to do it.
+		Either it can be done as a 3D array and then we will need two realisations for weighted and non-weighted design.
+		Or vectors themselves can be formed in a bit weird way, but we will classify nodes comparing vectors not worrying about their structure.
+		It improves readability and simpliness only paying with the strange enumeration of array */
+		vector< vector<int> > vectors(numberOfNodes);
+		for(int i = 0; i < numberOfNodes; i++)
+			vectors[i].resize(numberOfColors * (weighted?numberOfWeights:1));
+
+		calculateVectors(nodeColors, vectors);
+		int nOC = classifyNodes(vectors, nodeColors);
+		if(nOC == numberOfColors) {break;}
+		else {numberOfColors = nOC;}
+	}
 }
