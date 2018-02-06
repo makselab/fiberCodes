@@ -60,7 +60,6 @@ void Processor::run() {
 		int color1 = node.getColor();
 
 		/* Find secondary color */
-		colorfulNodes.pop();
 		colorDistribution.clear();
 		colorDistribution.resize(numberOfColors, 0);
 		for(int i = 0; i < node.getNumberOfInputs(); i++) {

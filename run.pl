@@ -17,6 +17,7 @@ my %weightMap;
 # TODO: rethink operon commits
 my %operonsToChange;
 my %operonMap;
+my @buildingBlocks = ();
 my @adjacency;
 main();
 
@@ -190,6 +191,7 @@ sub createMaps {
 		print("$i\t- \"$entry\"\n");
 		$i++;
 	}
+	print("Printing the map of all possible weights...\n");
 	foreach my $entry (keys %weightMap) {
 		print("$weightMap{$entry}\t - $entry\n");
 	}
@@ -325,10 +327,23 @@ sub parseCodeOutput {
 	my @output = ();
 	my @data = split /\n/, $codeOutput;
 	my $i = 0;
-	foreach(@data) {
-		my @tmp = split /\t/, $_;
-		$output[$i][0] = $tmp[0];
-		$output[$i++][1] = $tmp[1];
+	my $buildingBlocksInput = 0;
+	my $bbId = 0;
+	foreach my $line (@data) {
+		if($line =~ /Building block/) {$buildingBlocksInput = 1;}
+		if($buildingBlocksInput == 0) {
+			my @tmp = split /\t/, $line;
+			$output[$i][0] = $tmp[0];
+			$output[$i++][1] = $tmp[1];
+		} else {
+			if($line =~ /Building block/) {
+				$line =~ s/Building block id = (\d+)/$1/;
+				$bbId = $1;
+			} else {
+				if(!$buildingBlocks[$bbId]) {$buildingBlocks[$bbId][0] = $line; next;}
+				push(@buildingBlocks[$bbId], $line);
+			}
+		}
 	}
 
 	return \@output;
@@ -377,6 +392,14 @@ sub createOutput {
 			print(outputFile "\n");
 		}
 		close(outputFile);
+	}
+
+	for(my $i = 0; $i < scalar @buildingBlocks; $i++) {
+		print("Block $i:\n");
+		for(my $j = 0; $j < scalar @{$buildingBlocks[$i]}; $j++) {
+			print("$map[$buildingBlocks[$i][$j]]\t");
+		}
+		print("\n");
 	}
 }
 
