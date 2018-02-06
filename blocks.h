@@ -9,8 +9,10 @@ private:
 	vector<int> nodes;
 	vector<int> colors;
 public:
-	BuildingBlock(int iD) {id = iD;};
-	void addNode(int id);
+	BuildingBlock(int iD) {id = iD; colors.resize(2);};
+	bool addNode(int id);
+	void setColors(int color1, int color2);
+	bool colorFits(int color);
 	void print();
 };
 
