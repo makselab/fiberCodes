@@ -32,6 +32,7 @@ private:
 	int findGroupoids(int numberOfNodes, vector< vector<int> > groupoidConnections, vector<int> &nodeColors);
 private:
 	vector<BuildingBlock> blocks;
+	void prepareColors(vector<int> &nodeColors, int numberOfColors);
 public:
 	void run();
 };

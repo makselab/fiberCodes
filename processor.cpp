@@ -37,19 +37,41 @@ void Processor::run() {
 	}
 	
 	/* Here we find building blocks */
-	vector<int> colorDistribution(numberOfColors, 0);
+	prepareColors(nodeColors, numberOfColors);
+
+	/* First we create arrays of different colors */
+	vector<vector<Node*>> colorSets(numberOfColors);
+
 	for(int i = 0; i < numberOfNodes; i++) {
-		nodes[i].setColor(nodeColors[i]);
-		colorDistribution[nodeColors[i]]++;
+		int c = nodes[i].getColor();
+		if(c != -1) {colorSets[c].push_back(&nodes[i]);}
 	}
 
-	/* Now we put all elements of unique colors together to the color -1*/
-	for(int i = 0; i < numberOfNodes; i++) {
-		if(colorDistribution[nodes[i].getColor()] == 1) {nodes[i].setColor(-1);}
+	/*for(int i = 0; i < numberOfColors; i++) {
+		cout << "Color[" << i << "] = ";
+		for(int j = 0; j < colorSets[i].size(); j++) {
+			cout << colorSets[i][j]->getId() << "[" << colorSets[i][j]->getColor() << "]\t";
+		}
+		cout << endl;
+	}*/
+
+	for(int i = 0; i < numberOfColors; i++) {
+		blocks.push_back(BuildingBlock(blocks.size()));
+		for(int j = 0; j < colorSets[i].size(); j++) {
+			blocks[i].addNode(colorSets[i][j]->getId());
+			for(int k = 0; k < colorSets[i][j]->getNumberOfInputs(); k++) {
+				blocks[i].addNode(colorSets[i][j]->getInput(k)->getId());
+			}
+		}
 	}
+	
+	for(int i = 0; i < blocks.size(); i++) {
+		blocks[i].print();
+	}
+	//blocks.push_back();
 
 	/* Here we choose the node to start search */
-	stack<Node> colorfulNodes;
+	/*stack<Node> colorfulNodes;
 	for(int i = 0; i < numberOfNodes; i++) {
 		if(nodes[i].getColor() != -1) {colorfulNodes.push(nodes[i]);}
 	}
@@ -57,20 +79,19 @@ void Processor::run() {
 	while(!colorfulNodes.empty()) {
 		Node node = colorfulNodes.top();
 		colorfulNodes.pop();
-		int color1 = node.getColor();
+		int color1 = node.getColor();*/
 
 		/* Find secondary color */
-		colorDistribution.clear();
-		colorDistribution.resize(numberOfColors, 0);
+		/*vector<int> colorDistribution(numberOfColors, 0);
 		for(int i = 0; i < node.getNumberOfInputs(); i++) {
 			if(node.getInput(i)->getColor() == -1) {continue;}
 			colorDistribution[node.getInput(i)->getColor()]++;
 		}
 		colorDistribution[color1] = -1;
-		int color2 = distance(colorDistribution.begin(), max_element(colorDistribution.begin(), colorDistribution.end()));
+		int color2 = distance(colorDistribution.begin(), max_element(colorDistribution.begin(), colorDistribution.end()));*/
 
 		/* Form blocks with firstly or secondary color */
-		int blockId = blocks.size();
+		/*int blockId = blocks.size();
 		blocks.push_back(BuildingBlock(blockId));
 		blocks[blockId].setColors(color1, color2);
 		stack<Node*> blockStack;
@@ -97,6 +118,19 @@ void Processor::run() {
 		}
 
 		blocks[blockId].print();
+	}*/
+}
+
+void Processor::prepareColors(vector<int> &nodeColors, int numberOfColors) {
+	vector<int> colorDistribution(numberOfColors, 0);
+	for(int i = 0; i < numberOfNodes; i++) {
+		nodes[i].setColor(nodeColors[i]);
+		colorDistribution[nodeColors[i]]++;
+	}
+
+	/* Now we put all elements of unique colors together to the color -1*/
+	for(int i = 0; i < numberOfNodes; i++) {
+		if(colorDistribution[nodes[i].getColor()] == 1) {nodes[i].setColor(-1);}
 	}
 }
 
