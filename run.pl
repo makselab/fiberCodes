@@ -394,13 +394,22 @@ sub createOutput {
 		close(outputFile);
 	}
 
-	for(my $i = 0; $i < scalar @buildingBlocks; $i++) {
-		print("Block $i:\n");
-		for(my $j = 0; $j < scalar @{$buildingBlocks[$i]}; $j++) {
-			print("$map[$buildingBlocks[$i][$j]]\t");
-		}
-		print("\n");
+	my $blockOutputFile;
+	if($outputFile ne "") {
+		$blockOutputFile = $outputFile;
+		$blockOutputFile =~ s/([\w\W]+)\.[\w\W]+$/$1/;
+	} else {
+		$blockOutputFile = "blocks";
 	}
+	open (blocksFile, '>', $blockOutputFile . "_blocks.txt");
+	for(my $i = 0; $i < scalar @buildingBlocks; $i++) {
+		print(blocksFile "Block $i:\n");
+		for(my $j = 0; $j < scalar @{$buildingBlocks[$i]}; $j++) {
+			print(blocksFile "$map[$buildingBlocks[$i][$j]]\t");
+		}
+		print(blocksFile "\n");
+	}
+	close(blocksFile);
 }
 
 sub createGephiOutput {
@@ -410,7 +419,7 @@ sub createGephiOutput {
 	my $gephiOutputFile;
 	if($outputFile ne "") {
 		$gephiOutputFile = $outputFile;
-		$gephiOutputFile =~ s/\.[\w\W]+$//;
+		$gephiOutputFile =~ s/([\w\W]+)\.[\w\W]+$/$1/;
 	} else {
 		$gephiOutputFile = "gephi";
 	}
