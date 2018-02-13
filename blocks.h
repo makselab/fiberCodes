@@ -11,6 +11,7 @@ public:
 	BuildingBlock(int iD) {id = iD;};
 	bool addNode(int id);
 	void print();
+	int getNumberOfNodes() {return nodes.size();}
 };
 
 #endif

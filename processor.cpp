@@ -56,13 +56,14 @@ void Processor::run() {
 	}*/
 
 	for(int i = 0; i < numberOfColors; i++) {
-		blocks.push_back(BuildingBlock(blocks.size()));
+		BuildingBlock bb(blocks.size());
 		for(int j = 0; j < colorSets[i].size(); j++) {
-			blocks[i].addNode(colorSets[i][j]->getId());
+			bb.addNode(colorSets[i][j]->getId());
 			for(int k = 0; k < colorSets[i][j]->getNumberOfInputs(); k++) {
-				blocks[i].addNode(colorSets[i][j]->getInput(k)->getId());
+				bb.addNode(colorSets[i][j]->getInput(k)->getId());
 			}
 		}
+		if(bb.getNumberOfNodes() != 0) {blocks.push_back(bb);}
 	}
 	
 	for(int i = 0; i < blocks.size(); i++) {
