@@ -5,6 +5,7 @@ use warnings;
 my $help = 0;
 my $directed = 0;
 my $weighted = 0;
+my $buildingBlocksOutput = 0;
 my $operonInput = 0;
 my $inputFile = "";
 my $gephi = 0;
@@ -31,7 +32,9 @@ sub main {
 	my $parsedOutput_ref = parseCodeOutput($codeOutput);
 	my %groupoids = formGroupoids($parsedOutput_ref);
 	createOutput(%groupoids);
-	createGephiOutput($parsedOutput_ref);
+	if($gephi == 1) {
+		createGephiOutput($parsedOutput_ref);
+	}
 }
 
 sub readCLInput {
@@ -58,6 +61,10 @@ sub readCLInput {
 			$directed = 1;
 			next;
 		}
+		if($arg eq "-buildingBlocks") {
+			$buildingBlocksOutput = 1;
+			next;
+		}
 		if($arg eq "-inputFrom") {
 			$inputFile = shift @ARGV;
 			next;
@@ -78,6 +85,7 @@ sub readCLInput {
 		print("-weighted\t\t- Initially we think that graph is unweighted, sets it to weighted\n");
 		print("-gephi\t\t\t- Create output in a gephi format. Uses outputTo file directory. If not specified, puts it together with the code\n");
 		print("-operon\t\t\t- Using input from regulonDB operons. Initializes weighed and directed itself\n");
+		print("-buildingBlocks\t\t- Find network building blocks and put them into files. If used together with -gephi, then output for all blocks will also be given in gephi format\n");
 		print("-inputFrom filename\t- Path to file with connections to setup adjacency\n");
 		print("-outputTo filename\t- Path to output file\n");
 		exit;
@@ -394,22 +402,24 @@ sub createOutput {
 		close(outputFile);
 	}
 
-	my $blockOutputFile;
-	if($outputFile ne "") {
-		$blockOutputFile = $outputFile;
-		$blockOutputFile =~ s/([\w\W]+)\.[\w\W]+$/$1/;
-	} else {
-		$blockOutputFile = "blocks";
-	}
-	open (blocksFile, '>', $blockOutputFile . "_blocks.txt");
-	for(my $i = 0; $i < scalar @buildingBlocks; $i++) {
-		print(blocksFile "Block $i:\n");
-		for(my $j = 0; $j < scalar @{$buildingBlocks[$i]}; $j++) {
-			print(blocksFile "$map[$buildingBlocks[$i][$j]]\t");
+	if($buildingBlocksOutput == 1) {
+		my $blockOutputFile;
+		if($outputFile ne "") {
+			$blockOutputFile = $outputFile;
+			$blockOutputFile =~ s/([\w\W]+)\.[\w\W]+$/$1/;
+		} else {
+			$blockOutputFile = "blocks";
 		}
-		print(blocksFile "\n");
+		open (blocksFile, '>', $blockOutputFile . "_blocks.txt");
+		for(my $i = 0; $i < scalar @buildingBlocks; $i++) {
+			print(blocksFile "Block $i:\n");
+			for(my $j = 0; $j < scalar @{$buildingBlocks[$i]}; $j++) {
+				print(blocksFile "$map[$buildingBlocks[$i][$j]]\t");
+			}
+			print(blocksFile "\n");
+		}
+		close(blocksFile);
 	}
-	close(blocksFile);
 }
 
 sub createGephiOutput {
