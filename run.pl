@@ -458,4 +458,52 @@ sub createGephiOutput {
 		print(edgesFile "\n");
 	}
 	close(edgesFile);
+
+	#now in case we also have building blocks, we need to create gephi files for them
+	if($buildingBlocksOutput == 1) {
+		my $outputFolder = $outputFile;
+		$outputFolder =~ s/.txt//;
+		$outputFolder = $outputFolder . "buildingBlocks";
+		system("mkdir $outputFolder");
+		
+		for(my $i = 0; $i < scalar @buildingBlocks; $i++) {
+			open (nodesFile, '>', "$outputFolder/$i" . "_nodes.csv");
+			print(nodesFile "Id,Label,modularity_class\n");
+			for(my $j = 0; $j < scalar @{$buildingBlocks[$i]}; $j++) {
+				print(nodesFile "$map[$buildingBlocks[$i][$j]],$map[$buildingBlocks[$i][$j]],$parsedOutput[$buildingBlocks[$i][$j]][1]\n");
+			}
+			close(nodesFile);
+		}
+		for(my $blockId = 0; $blockId < scalar @buildingBlocks; $blockId++) {
+			open (edgesFile, '>', "$outputFolder/$blockId" . "_edges.csv");
+			print(edgesFile "Source,Target,Type");
+			if($weighted) {print(edgesFile ",Weight\n");}
+			else {print(edgesFile "\n");}
+			my $type;
+			if($directed) {$type = "directed";}
+			else {$type = "undirected";}
+			for(my $i = 0; $i < scalar @adjacency; $i++) {
+				#print("BB = $blockId\t$adjacency[$i][0], $adjacency[$i][1]\n");
+				#for(my $k = 0; $k < scalar @{$buildingBlocks[$blockId]}; $k++) {
+				#	print("$buildingBlocks[$blockId][$k]\n");
+				#}
+				#my $a = grep{$_ =~ /^$adjacency[$i][0]$/} @{$buildingBlocks[$blockId]};
+				#my $b = grep{$_ =~ /^$adjacency[$i][1]$/} @{$buildingBlocks[$blockId]};
+				#my $c = $a and $b;
+				#print("a/b/c = $a/$b/$c\n");
+				if(grep{$_ =~ /^$adjacency[$i][0]$/} @{$buildingBlocks[$blockId]} and
+					grep{$_ =~ /^$adjacency[$i][1]$/} @{$buildingBlocks[$blockId]}) {
+					print(edgesFile "$map[$adjacency[$i][0]],$map[$adjacency[$i][1]],$type");
+					#print("$map[$adjacency[$i][0]],$map[$adjacency[$i][1]],$type\n");
+					if($weighted) {
+						#we add 1 here, because gephi doesn't like when weight is equal to 0
+						my $gephiWeight = $adjacency[$i][2] + 1;
+						print(edgesFile ",$gephiWeight");
+					}
+					print(edgesFile "\n");
+				}
+			}
+			close(edgesFile);
+		}
+	}
 }
