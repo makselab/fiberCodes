@@ -483,18 +483,9 @@ sub createGephiOutput {
 			if($directed) {$type = "directed";}
 			else {$type = "undirected";}
 			for(my $i = 0; $i < scalar @adjacency; $i++) {
-				#print("BB = $blockId\t$adjacency[$i][0], $adjacency[$i][1]\n");
-				#for(my $k = 0; $k < scalar @{$buildingBlocks[$blockId]}; $k++) {
-				#	print("$buildingBlocks[$blockId][$k]\n");
-				#}
-				#my $a = grep{$_ =~ /^$adjacency[$i][0]$/} @{$buildingBlocks[$blockId]};
-				#my $b = grep{$_ =~ /^$adjacency[$i][1]$/} @{$buildingBlocks[$blockId]};
-				#my $c = $a and $b;
-				#print("a/b/c = $a/$b/$c\n");
 				if(grep{$_ =~ /^$adjacency[$i][0]$/} @{$buildingBlocks[$blockId]} and
 					grep{$_ =~ /^$adjacency[$i][1]$/} @{$buildingBlocks[$blockId]}) {
 					print(edgesFile "$map[$adjacency[$i][0]],$map[$adjacency[$i][1]],$type");
-					#print("$map[$adjacency[$i][0]],$map[$adjacency[$i][1]],$type\n");
 					if($weighted) {
 						#we add 1 here, because gephi doesn't like when weight is equal to 0
 						my $gephiWeight = $adjacency[$i][2] + 1;
