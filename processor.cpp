@@ -60,7 +60,22 @@ void Processor::run() {
 		for(int j = 0; j < colorSets[i].size(); j++) {
 			bb.addNode(colorSets[i][j]->getId());
 			for(int k = 0; k < colorSets[i][j]->getNumberOfInputs(); k++) {
-				bb.addNode(colorSets[i][j]->getInput(k)->getId());
+				bb.addNode(colorSets[i][j]->getInput(k)->getId(), colorSets[i][j]->getInput(k)->getColor());
+			}
+			while(1) {
+				int ac = bb.getAdditionalColor();
+				if(ac == -1) {break;}
+				bb.print();
+				cout << "Ac = " << ac << endl;
+				/*Problem is when we need to make another round of addition of the same color*/
+				for(int k = 0; k < colorSets[i][j]->getNumberOfInputs(); k++) {
+					if(colorSets[i][j]->getInput(k)->getColor() == ac) {
+
+					}
+				}
+				for(int l = 0; l < colorSets[ac].size(); l++) {
+					bb.addNode(colorSets[ac][l]->getId(), colorSets[ac][l]->getColor());
+				}
 			}
 		}
 		if(bb.getNumberOfNodes() != 0) {blocks.push_back(bb);}
@@ -69,57 +84,6 @@ void Processor::run() {
 	for(int i = 0; i < blocks.size(); i++) {
 		blocks[i].print();
 	}
-	//blocks.push_back();
-
-	/* Here we choose the node to start search */
-	/*stack<Node> colorfulNodes;
-	for(int i = 0; i < numberOfNodes; i++) {
-		if(nodes[i].getColor() != -1) {colorfulNodes.push(nodes[i]);}
-	}
-
-	while(!colorfulNodes.empty()) {
-		Node node = colorfulNodes.top();
-		colorfulNodes.pop();
-		int color1 = node.getColor();*/
-
-		/* Find secondary color */
-		/*vector<int> colorDistribution(numberOfColors, 0);
-		for(int i = 0; i < node.getNumberOfInputs(); i++) {
-			if(node.getInput(i)->getColor() == -1) {continue;}
-			colorDistribution[node.getInput(i)->getColor()]++;
-		}
-		colorDistribution[color1] = -1;
-		int color2 = distance(colorDistribution.begin(), max_element(colorDistribution.begin(), colorDistribution.end()));*/
-
-		/* Form blocks with firstly or secondary color */
-		/*int blockId = blocks.size();
-		blocks.push_back(BuildingBlock(blockId));
-		blocks[blockId].setColors(color1, color2);
-		stack<Node*> blockStack;
-		blockStack.push(&node);
-
-		while (!blockStack.empty()) {
-			Node* newNode = blockStack.top();
-			blockStack.pop();
-			if(blocks[blockId].colorFits(newNode->getColor())) {blocks[blockId].addNode(newNode->getId());}
-			for(int i = 0; i < newNode->getNumberOfInputs(); i++) {
-				if(blocks[blockId].colorFits(newNode->getInput(i)->getColor())) {
-					if(blocks[blockId].addNode(newNode->getInput(i)->getId())) {
-						blockStack.push(newNode->getInput(i));
-					}
-				}
-			}
-			for(int i = 0; i < newNode->getNumberOfOutputs(); i++) {
-				if(blocks[blockId].colorFits(newNode->getOutput(i)->getColor())) {
-					if(blocks[blockId].addNode(newNode->getOutput(i)->getId())) {
-						blockStack.push(newNode->getOutput(i)); 
-					}
-				}
-			}
-		}
-
-		blocks[blockId].print();
-	}*/
 }
 
 void Processor::prepareColors(vector<int> &nodeColors, int numberOfColors) {
