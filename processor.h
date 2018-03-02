@@ -27,9 +27,11 @@ private:
 	vector< vector<int> > connections;
 	void readConnectionsFile();
 private:
+	vector<int> noInputNodes;
+	void findNoInputNodes();
 	void calculateVectors(vector<int> nodeColors, vector< vector<int> > &vectors);
 	int classifyNodes(vector< vector<int> > vectors, vector<int> &nodeColors);
-	int findGroupoids(int numberOfNodes, vector< vector<int> > groupoidConnections, vector<int> &nodeColors);
+	int findGroupoids(int numberOfNodes, vector< vector<int> > groupoidConnections, int numberOfColors, vector<int> &nodeColors);
 private:
 	vector<BuildingBlock> blocks;
 	void prepareColors(vector<int> &nodeColors, int numberOfColors);

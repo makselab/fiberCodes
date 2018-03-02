@@ -25,12 +25,21 @@ Processor::Processor() {
 		nodes.push_back(Node(i, 0));
 
 	readConnectionsFile();
+	findNoInputNodes();
 }
 
 void Processor::run() {
+	/* Prepare colors for input */
 	// different colors here just mean different type of nodes
+	// defining all colors initially to be same
+	// all nodes with no input will have different colors in directed case, because they are not synchronized
 	vector<int> nodeColors(numberOfNodes, 0);
-	int numberOfColors = findGroupoids(numberOfNodes, connections, nodeColors);
+	int numberOfColors = noInputNodes.size() + 1;
+	for(int i = 0; i < noInputNodes.size(); i++) {
+		nodeColors[noInputNodes[i]] = i;
+	}
+
+	numberOfColors = findGroupoids(numberOfNodes, connections, numberOfColors, nodeColors);
 
 	for(int i = 0; i < numberOfNodes; i++) {
 		cout << i << "\t" << nodeColors[i] << endl;
@@ -215,6 +224,17 @@ void Processor::readConnectionsFile() {
 	}*/
 }
 
+void Processor::findNoInputNodes() {
+	if(numberOfNodes == 0 || directed == 0) {return;}
+	vector<bool> hasInput(numberOfNodes, 0);
+	for(int i = 0; i < numberOfConnections; i++) {
+		hasInput[connections[i][1]] = 1;
+	}
+	for(int i = 0; i < numberOfNodes; i++) {
+		if(hasInput[i] == 0) {noInputNodes.push_back(i);}
+	}
+}
+
 void Processor::calculateVectors(vector<int> nodeColors, vector< vector<int> > &vectors) {
 	for(int i = 0; i < connections.size(); i++) {
 		if(directed == false) {
@@ -269,18 +289,25 @@ int Processor::classifyNodes(vector< vector<int> > vectors, vector<int> &nodeCol
 	cout << endl;
 */
 	// now let`s reshuffle node types for next step
-	for(int i = 1; i < nodeColors.size(); i++) {
+	/* this for loop was i = 1 ... i++ before. I decided that it was starting from 1 because I copied this loop
+	from one above, I don`t see any reason for 1 here, so I put 0, cause it causes problem with new nodes without
+	input, cause they need color 0.
+	If the reason was something else, don`t forget to put it here in commentary */
+	for(int i = 0; i < nodeColors.size(); i++) {
 		for(int j = 0; j < vectorTypes.size(); j++) {
-			if(vectors[i] == vectorTypes[j]) {nodeColors[i] = j;}
+			if(vectors[i] == vectorTypes[j]) {nodeColors[i] = j + noInputNodes.size();}
 		}
 	}
 
-	return vectorTypes.size();
+	if(directed != 0) {
+		for(int i = 0; i < noInputNodes.size(); i++) {
+			nodeColors[noInputNodes[i]] = i;
+		}
+	}
+	return vectorTypes.size() + noInputNodes.size();
 }
 
-int Processor::findGroupoids(int numberOfNodes, vector< vector<int> > groupoidConnections, vector<int> &nodeColors) {
-	// defining all colors initially to be same
-	int numberOfColors = 1;
+int Processor::findGroupoids(int numberOfNodes, vector< vector<int> > groupoidConnections, int numberOfColors, vector<int> &nodeColors) {
 	while(1) {
 		// create 2D vector array to store all vectors belonging to each node
 		/* Explanation why array is of size numberOfNodes x (numberOfColors * numberOfWeights). There are two ways how to do it.
@@ -288,8 +315,9 @@ int Processor::findGroupoids(int numberOfNodes, vector< vector<int> > groupoidCo
 		Or vectors themselves can be formed in a bit weird way, but we will classify nodes comparing vectors not worrying about their structure.
 		It improves readability and simpliness only paying with the strange enumeration of array */
 		vector< vector<int> > vectors(numberOfNodes);
-		for(int i = 0; i < numberOfNodes; i++)
+		for(int i = 0; i < numberOfNodes; i++) {
 			vectors[i].resize(numberOfColors * (weighted?numberOfWeights:1));
+		}
 
 		calculateVectors(nodeColors, vectors);
 		int nOC = classifyNodes(vectors, nodeColors);
