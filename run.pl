@@ -384,20 +384,24 @@ sub createOutput {
 	my $numberOfGroupoids = keys %groupoids;
 	print("Printing parsed code output...\n");
 	for(my $i = 0; $i < $numberOfGroupoids; $i++) {
-		print("$i:\t");
-		for(my $j = 0; $j < scalar @{$groupoids{$i}}; $j++) {
-			print("$groupoids{$i}[$j]\t");
+		if(defined $groupoids{$i}) {
+			print("$i:\t");
+			for(my $j = 0; $j < scalar @{$groupoids{$i}}; $j++) {
+				print("$groupoids{$i}[$j]\t");
+			}
+			print("\n");
 		}
-		print("\n");
 	}
 	if($outputFile ne "") {
 		open (outputFile, '>', $outputFile);
 		for(my $i = 0; $i < $numberOfGroupoids; $i++) {
-			print(outputFile "$i:\t");
-			for(my $j = 0; $j < scalar @{$groupoids{$i}}; $j++) {
-				print(outputFile "$groupoids{$i}[$j]\t");
+			if(defined $groupoids{$i}) {
+				print(outputFile "$i:\t");
+				for(my $j = 0; $j < scalar @{$groupoids{$i}}; $j++) {
+					print(outputFile "$groupoids{$i}[$j]\t");
+				}
+				print(outputFile "\n");
 			}
-			print(outputFile "\n");
 		}
 		close(outputFile);
 	}
