@@ -416,11 +416,13 @@ sub createOutput {
 		}
 		open (blocksFile, '>', $blockOutputFile . "_blocks.txt");
 		for(my $i = 0; $i < scalar @buildingBlocks; $i++) {
-			print(blocksFile "Block $i:\n");
-			for(my $j = 0; $j < scalar @{$buildingBlocks[$i]}; $j++) {
-				print(blocksFile "$map[$buildingBlocks[$i][$j]]\t");
+			if(defined $buildingBlocks[$i]) {
+				print(blocksFile "Block $i:\n");
+				for(my $j = 0; $j < scalar @{$buildingBlocks[$i]}; $j++) {
+					print(blocksFile "$map[$buildingBlocks[$i][$j]]\t");
+				}
+				print(blocksFile "\n");
 			}
-			print(blocksFile "\n");
 		}
 		close(blocksFile);
 	}
