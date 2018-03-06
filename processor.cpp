@@ -65,28 +65,40 @@ void Processor::run() {
 	}*/
 
 	for(int i = 0; i < numberOfColors; i++) {
-		BuildingBlock bb(blocks.size());
+		/* We use color id as id block id, cause it`s convinient */
+		BuildingBlock bb(i);
+		stack<Node*> *toAdd = new stack<Node*>;
 		for(int j = 0; j < colorSets[i].size(); j++) {
 			bb.addNode(colorSets[i][j]->getId());
 			for(int k = 0; k < colorSets[i][j]->getNumberOfInputs(); k++) {
-				bb.addNode(colorSets[i][j]->getInput(k)->getId(), colorSets[i][j]->getInput(k)->getColor());
-			}
-			while(1) {
-				int ac = bb.getAdditionalColor();
-				if(ac == -1) {break;}
-				bb.print();
-				cout << "Ac = " << ac << endl;
-				/*Problem is when we need to make another round of addition of the same color*/
-				for(int k = 0; k < colorSets[i][j]->getNumberOfInputs(); k++) {
-					if(colorSets[i][j]->getInput(k)->getColor() == ac) {
-
-					}
-				}
-				for(int l = 0; l < colorSets[ac].size(); l++) {
-					bb.addNode(colorSets[ac][l]->getId(), colorSets[ac][l]->getColor());
+				if(bb.addNode(colorSets[i][j]->getInput(k)->getId(), colorSets[i][j]->getInput(k)->getColor())) {
+					toAdd->push(colorSets[i][j]->getInput(k));
 				}
 			}
 		}
+		while(1) {
+			bool added = false;
+			stack<Node*> *newToAdd = new stack<Node*>;
+			//bb.print();
+			while(!toAdd->empty()) {
+				Node* newNode = toAdd->top();
+				toAdd->pop();
+				//newNode->print();
+				if(bb.isAddableColor(newNode->getColor())) {
+					for(int k = 0; k < newNode->getNumberOfInputs(); k++) {
+						if(bb.addNode(newNode->getInput(k)->getId(), newNode->getInput(k)->getColor())) {
+							added = true;
+							newToAdd->push(newNode->getInput(k));
+							//cout << "Node " << newNode->getInput(k)->getId() << " with color " << newNode->getInput(k)->getColor() << " added" << endl;
+							//bb.print();
+						}
+					}
+				}
+			}
+			if(added == 0) {break;}
+			toAdd = newToAdd;
+		}
+		delete toAdd;
 		if(bb.getNumberOfNodes() != 0) {blocks.push_back(bb);}
 	}
 	

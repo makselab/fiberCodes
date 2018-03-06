@@ -7,7 +7,7 @@ bool BuildingBlock::addNode(int id, int color) {
 	}
 	nodes.push_back(id);
 	if(color != -1) {
-		if(color > colors.size()) {
+		if(color >= colors.size()) {
 			colors.resize(color + 1);
 		}
 		colors[color]++;
@@ -15,14 +15,15 @@ bool BuildingBlock::addNode(int id, int color) {
 	return 1;
 }
 
-int BuildingBlock::getAdditionalColor() {
-	for(int i = 0; i < colors.size(); i++) {
-		if(colors[i] > 1) {
-			colors[i] = 0;
-			return i;
-		}
+bool BuildingBlock::isAddableColor(int color) {
+	if(color >= colors.size()) {
+		return 0;
 	}
-	return -1;
+	if(colors[color] > 1) {
+		return 1;
+	} else {
+		return 0;
+	}
 }
 
 void BuildingBlock::print() {

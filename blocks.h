@@ -11,7 +11,7 @@ private:
 public:
 	BuildingBlock(int iD) {id = iD; colors.resize(1, 0);};
 	bool addNode(int id, int color = -1);
-	int getAdditionalColor();
+	bool isAddableColor(int color);
 	void print();
 	int getNumberOfNodes() {return nodes.size();}
 };
