@@ -473,31 +473,35 @@ sub createGephiOutput {
 		system("mkdir $outputFolder");
 		
 		for(my $i = 0; $i < scalar @buildingBlocks; $i++) {
-			open (nodesFile, '>', "$outputFolder/$i" . "_nodes.csv");
-			print(nodesFile "Id,Label,modularity_class\n");
-			for(my $j = 0; $j < scalar @{$buildingBlocks[$i]}; $j++) {
-				print(nodesFile "$map[$buildingBlocks[$i][$j]],$map[$buildingBlocks[$i][$j]],$parsedOutput[$buildingBlocks[$i][$j]][1]\n");
+			if(defined $buildingBlocks[$i]) {
+				open (nodesFile, '>', "$outputFolder/$i" . "_nodes.csv");
+				print(nodesFile "Id,Label,modularity_class\n");
+				for(my $j = 0; $j < scalar @{$buildingBlocks[$i]}; $j++) {
+					print(nodesFile "$map[$buildingBlocks[$i][$j]],$map[$buildingBlocks[$i][$j]],$parsedOutput[$buildingBlocks[$i][$j]][1]\n");
+				}
+				close(nodesFile);
 			}
-			close(nodesFile);
 		}
 		for(my $blockId = 0; $blockId < scalar @buildingBlocks; $blockId++) {
-			open (edgesFile, '>', "$outputFolder/$blockId" . "_edges.csv");
-			print(edgesFile "Source,Target,Type");
-			if($weighted) {print(edgesFile ",Weight\n");}
-			else {print(edgesFile "\n");}
-			my $type;
-			if($directed) {$type = "directed";}
-			else {$type = "undirected";}
-			for(my $i = 0; $i < scalar @adjacency; $i++) {
-				if(grep{$_ =~ /^$adjacency[$i][0]$/} @{$buildingBlocks[$blockId]} and
-					grep{$_ =~ /^$adjacency[$i][1]$/} @{$buildingBlocks[$blockId]}) {
-					print(edgesFile "$map[$adjacency[$i][0]],$map[$adjacency[$i][1]],$type");
-					if($weighted) {
-						#we add 1 here, because gephi doesn't like when weight is equal to 0
-						my $gephiWeight = $adjacency[$i][2] + 1;
-						print(edgesFile ",$gephiWeight");
+			if(defined $buildingBlocks[$blockId]) {
+				open (edgesFile, '>', "$outputFolder/$blockId" . "_edges.csv");
+				print(edgesFile "Source,Target,Type");
+				if($weighted) {print(edgesFile ",Weight\n");}
+				else {print(edgesFile "\n");}
+				my $type;
+				if($directed) {$type = "directed";}
+				else {$type = "undirected";}
+				for(my $i = 0; $i < scalar @adjacency; $i++) {
+					if(grep{$_ =~ /^$adjacency[$i][0]$/} @{$buildingBlocks[$blockId]} and
+						grep{$_ =~ /^$adjacency[$i][1]$/} @{$buildingBlocks[$blockId]}) {
+						print(edgesFile "$map[$adjacency[$i][0]],$map[$adjacency[$i][1]],$type");
+						if($weighted) {
+							#we add 1 here, because gephi doesn't like when weight is equal to 0
+							my $gephiWeight = $adjacency[$i][2] + 1;
+							print(edgesFile ",$gephiWeight");
+						}
+						print(edgesFile "\n");
 					}
-					print(edgesFile "\n");
 				}
 			}
 			close(edgesFile);

@@ -65,8 +65,8 @@ void Processor::run() {
 	}*/
 
 	for(int i = 0; i < numberOfColors; i++) {
-		/* We use color id as id block id, cause it`s convinient */
-		BuildingBlock bb(i);
+		/* We use size of blocks as id, cause we want block ids to be from 0 to n, where n is number of building blocks */
+		BuildingBlock bb(blocks.size());
 		stack<Node*> *toAdd = new stack<Node*>;
 		for(int j = 0; j < colorSets[i].size(); j++) {
 			bb.addNode(colorSets[i][j]->getId());
