@@ -214,7 +214,7 @@ void Processor::findNoInputNodes() {
 		hasInput[connections[i][1]] = 1;
 	}
 	for(int i = 0; i < numberOfConnections; i++) {
-		if(hasInput[i] == 0 && connections[i][0] == connections[i][1]) {
+		if(hasInput[connections[i][0]] == 0 && connections[i][0] == connections[i][1]) {
 			onlyLoopbackInputNodes.push_back(connections[i][0]);
 			hasInput[connections[i][0]] = 1;
 		}
