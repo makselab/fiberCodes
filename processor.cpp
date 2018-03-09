@@ -204,6 +204,7 @@ void Processor::findNoInputNodes() {
 	if(numberOfNodes == 0 || directed == 0) {return;}
 	vector<bool> hasInput(numberOfNodes, 0);
 	for(int i = 0; i < numberOfConnections; i++) {
+		if(connections[i][0] == connections[i][1]) {continue;}
 		hasInput[connections[i][1]] = 1;
 	}
 	for(int i = 0; i < numberOfNodes; i++) {
