@@ -33,10 +33,16 @@ void Processor::run() {
 	// different colors here just mean different type of nodes
 	// defining all colors initially to be same
 	// all nodes with no input will have different colors in directed case, because they are not synchronized
+	// same goes for nodes with only connection to itself, but we want to allow this nodes to be part of groupoids,
+	// cause they can synchronize
 	vector<int> nodeColors(numberOfNodes, 0);
-	int numberOfColors = noInputNodes.size() + 1;
+	int numberOfColors = noInputNodes.size() + onlyLoopbackInputNodes.size() + 1;
 	for(int i = 0; i < noInputNodes.size(); i++) {
 		nodeColors[noInputNodes[i]] = i;
+	}
+
+	for(int i = 0; i < onlyLoopbackInputNodes.size(); i++) {
+		nodeColors[onlyLoopbackInputNodes[i]] = noInputNodes.size() + i;
 	}
 
 	numberOfColors = findGroupoids(numberOfNodes, connections, numberOfColors, nodeColors);
@@ -206,6 +212,12 @@ void Processor::findNoInputNodes() {
 	for(int i = 0; i < numberOfConnections; i++) {
 		if(connections[i][0] == connections[i][1]) {continue;}
 		hasInput[connections[i][1]] = 1;
+	}
+	for(int i = 0; i < numberOfConnections; i++) {
+		if(hasInput[i] == 0 && connections[i][0] == connections[i][1]) {
+			onlyLoopbackInputNodes.push_back(connections[i][0]);
+			hasInput[connections[i][0]] = 1;
+		}
 	}
 	for(int i = 0; i < numberOfNodes; i++) {
 		if(hasInput[i] == 0) {noInputNodes.push_back(i);}

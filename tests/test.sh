@@ -8,4 +8,5 @@ cd ..
 ./run.pl -outputTo ./tests/out5.txt -inputFrom ./tests/test5.txt -weighted
 ./run.pl -outputTo ./tests/out6.txt -inputFrom ./tests/test6.txt -weighted -directed
 ./run.pl -outputTo ./tests/out7.txt -inputFrom ./tests/test7.txt -weighted -directed
+./run.pl -outputTo ./tests/out8.txt -inputFrom ./tests/test8.txt -weighted -directed
 cd ./tests

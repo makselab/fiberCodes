@@ -28,6 +28,7 @@ private:
 	void readConnectionsFile();
 private:
 	vector<int> noInputNodes;
+	vector<int> onlyLoopbackInputNodes;
 	void findNoInputNodes();
 	void calculateVectors(vector<int> nodeColors, vector< vector<int> > &vectors);
 	int classifyNodes(vector< vector<int> > vectors, vector<int> &nodeColors);
