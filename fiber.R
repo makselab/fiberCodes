@@ -34,7 +34,7 @@ readNetworkFile <- function() {
     numberOfColumns <- 2
   }
   
-  rawInput <- read.delim(configuration$InputFile, header = F)
+  rawInput <- read.delim(configuration$InputFile, header = F, sep = "\n")
   network <- rawInput %>%
     separate(1, paste(c(1:numberOfColumns), sep = ", "), sep = "[ \t]")
   colnames(network)[1] <- "Source"
@@ -72,6 +72,10 @@ getNodeIdByName <- function(nodeName) {
   return(nodeMap[grep(paste("^", nodeName, "$", sep = ""), nodeMap$Name), 2])
 }
 
+getNodeNameById <- function(id) {
+  return(nodeMap[grep(paste("^", id, "$", sep = ""), nodeMap$Id), 1])
+}
+
 getWeightIdByName <- function(weightName) {
   return(nodeMap[grep(paste("^", weightName, "$", sep = ""), weightMap$Name), 2])
 }
@@ -98,12 +102,16 @@ writeToAdjacencyFile <- function() {
   write(nrow(nodeMap), file = fileNames$AdjacencyFile, append = F)
   write(configuration$Directed, file = fileNames$AdjacencyFile, append = T)
   write(configuration$Weighted, file = fileNames$AdjacencyFile, append = T)
-  write(nrow(weightMap), file = fileNames$AdjacencyFile, append = T)
+  if(configuration$Weighted == "1") {
+    write(nrow(weightMap), file = fileNames$AdjacencyFile, append = T)
+  } else {
+    write(0, file = fileNames$AdjacencyFile, append = T)
+  }
   write.table(connectivity, file = fileNames$AdjacencyFile, col.names = F, row.names = F, quote = F, sep = "\t", append = T)
 }
 
 getFibersFromCodeOutput <- function() {
-  fibers <- read.delim(fileNames$FiberFile, header = F)
+  fibers <- read.delim(fileNames$FiberFile, header = F, sep = "\t")
   colnames(fibers)[1] <- "Id"
   colnames(fibers)[2] <- "FiberId"
   fibers <- cbind(nodeMap, fibers)[, c(-2, -3)]
@@ -115,6 +123,26 @@ getFibersFromCodeOutput <- function() {
   return(fibers)
 }
 
+getBuildingBlocksFromCodeOutput <- function() {
+  buildingBlocks <- read.delim(fileNames$BuildingBlocksFile, header = F, sep = "\n")
+  buildingBlocks <- buildingBlocks %>%
+    separate(1, c("Id", "Nodes"), sep = ":[ \t]")
+  buildingBlocks$Nodes[3]
+  
+  for(i in 1:nrow(buildingBlocks)) {
+    block <- data.frame(strsplit(buildingBlocks$Nodes[i], ", "), stringsAsFactors = F)
+    colnames(block)[1] <- "NodeId"
+    for(j in 1:nrow(block)) {
+      block$NodeName[j] <- getNodeNameById(block$NodeId[j])
+    }
+    block <- block %>%
+      select(2) %>%
+      summarise(Nodes = paste(NodeName, collapse = ", "))
+    buildingBlocks$Nodes[i] <- block$Nodes
+  }
+  return(buildingBlocks)
+}
+
 fileNames <- getFileNames()
 configuration <- readConfigurationFile()
 network <- readNetworkFile()
@@ -124,9 +152,12 @@ if(configuration$Weighted == "1") {
 }
 connectivity <- getTransformedConnectivity(network)
 writeToAdjacencyFile()
-# TODO: make the key to recompile code or not
+# TODO: make the key to recompile the code or not
 # TODO: properly check if code returned 1
-#system("g++ -std=c++11 main.cpp processor.cpp node.cpp blocks.cpp -o exec")
-#system("./exec")
+system("g++ -std=c++11 main.cpp processor.cpp node.cpp blocks.cpp -o exec")
+system("./exec")
 fibers <- getFibersFromCodeOutput()
+buildingBlocks <- getBuildingBlocksFromCodeOutput()
 fibers
+buildingBlocks
+

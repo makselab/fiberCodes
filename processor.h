@@ -26,6 +26,7 @@ private:
 	// create 2D vector array to store all connections
 	vector< vector<int> > connections;
 	void readConnectionsFile();
+	void printGroupoids(vector<int> groupoidIds);
 private:
 	vector<int> noInputNodes;
 	vector<int> onlyLoopbackInputNodes;

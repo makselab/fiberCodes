@@ -47,9 +47,11 @@ void Processor::run() {
 
 	numberOfColors = findGroupoids(numberOfNodes, connections, numberOfColors, nodeColors);
 
+	printGroupoids(nodeColors);
+	/*
 	for(int i = 0; i < numberOfNodes; i++) {
 		cout << i << "\t" << nodeColors[i] << endl;
-	}
+	}*/
 	
 	/* Here we find building blocks */
 	prepareColors(nodeColors, numberOfColors);
@@ -204,6 +206,19 @@ void Processor::readConnectionsFile() {
 		if(weighted) {cout << ". Weight = " << connections[i][2];}
 		cout << endl;
 	}*/
+}
+
+void Processor::printGroupoids(vector<int> groupoidIds) {
+	for(int i = 0; i < groupoidIds.size(); i++) {
+		cout << i << "\t" << groupoidIds[i] << endl;
+	}
+
+	ofstream fiberFile;
+	fiberFile.open("fibers.txt");
+	for(int i = 0; i < groupoidIds.size(); i++) {
+		fiberFile << i << "\t" << groupoidIds[i] << endl;
+	}
+	fiberFile.close();
 }
 
 void Processor::findNoInputNodes() {
