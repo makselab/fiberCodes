@@ -1,4 +1,4 @@
-source("/home/ian/Desktop/groupoid finding codes/fibers/R/functions.R")
+source("/home/ian/Desktop/groupoid_finding_codes/fibers/R/functions.R")
 
 context("Checking that the node and weight maps are created properly")
 
@@ -7,20 +7,20 @@ getTestConfiguration <- function(directed, weighted, testNetworkId) {
   configuration <- data.frame(matrix(vector(), nrow = 1, ncol = length(columnNames), dimnames = list(c(), columnNames)), stringsAsFactors = F)
   configuration$Directed <- as.character(directed)
   configuration$Weighted <- as.character(weighted)
-  configuration$InputFile <- paste("/home/ian/Desktop/groupoid finding codes/fibers/tests/testthat/testNetworks/test", testNetworkId, ".txt", sep = "")
-  configuration$OutputFile <- paste("/home/ian/Desktop/groupoid finding codes/fibers/tests/testthat/testNetworks/out", testNetworkId, ".txt", sep = "")
+  configuration$InputFile <- paste("/home/ian/Desktop/groupoid_finding_codes/fibers/tests/testthat/testNetworks/test", testNetworkId, ".txt", sep = "")
+  configuration$OutputFile <- paste("/home/ian/Desktop/groupoid_finding_codes/fibers/tests/testthat/testNetworks/out", testNetworkId, ".txt", sep = "")
   return(configuration)
 }
 
 test_that("Check maps of undirected unweighted network", {
   configuration <- getTestConfiguration(0, 0, 1)
-  
+
   network <- readNetworkFile(configuration)
   nodeMap <- createNodeMap(network)
   if(configuration$Weighted == "1") {
     weightMap <- createWeightMap(network)
   }
-  
+
   expect_match(nodeMap[1, 1], "a")
   expect_match(nodeMap[2, 1], "b")
   expect_match(nodeMap[3, 1], "c")
@@ -34,7 +34,7 @@ test_that("Check maps of undirected unweighted network", {
 
 test_that("Check maps of undirected weighted network", {
   configuration <- getTestConfiguration(0, 1, 2)
-  
+
   network <- readNetworkFile(configuration)
   nodeMap <- createNodeMap(network)
   if(configuration$Weighted == "1") {
@@ -55,13 +55,13 @@ test_that("Check maps of undirected weighted network", {
 
 test_that("Check maps of directed unweighted network", {
   configuration <- getTestConfiguration(1, 0, 3)
-  
+
   network <- readNetworkFile(configuration)
   nodeMap <- createNodeMap(network)
   if(configuration$Weighted == "1") {
     weightMap <- createWeightMap(network)
   }
-  
+
   expect_match(nodeMap[1, 1], "a")
   expect_match(nodeMap[2, 1], "b")
   expect_match(nodeMap[3, 1], "c")
@@ -69,13 +69,13 @@ test_that("Check maps of directed unweighted network", {
 
 test_that("Check maps of directed weighted network", {
   configuration <- getTestConfiguration(1, 1, 4)
-  
+
   network <- readNetworkFile(configuration)
   nodeMap <- createNodeMap(network)
   if(configuration$Weighted == "1") {
     weightMap <- createWeightMap(network)
   }
-  
+
   expect_match(nodeMap[1, 1], "1")
   expect_match(nodeMap[2, 1], "2")
   expect_match(nodeMap[3, 1], "3")

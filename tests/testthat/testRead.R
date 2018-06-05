@@ -1,4 +1,4 @@
-source("/home/ian/Desktop/groupoid finding codes/fibers/R/functions.R")
+source("/home/ian/Desktop/groupoid_finding_codes/fibers/R/functions.R")
 
 context("Checking that we read network files properly")
 
@@ -7,8 +7,8 @@ getTestConfiguration <- function(directed, weighted, testNetworkId) {
   configuration <- data.frame(matrix(vector(), nrow = 1, ncol = length(columnNames), dimnames = list(c(), columnNames)), stringsAsFactors = F)
   configuration$Directed <- as.character(directed)
   configuration$Weighted <- as.character(weighted)
-  configuration$InputFile <- paste("/home/ian/Desktop/groupoid finding codes/fibers/tests/testthat/testNetworks/test", testNetworkId, ".txt", sep = "")
-  configuration$OutputFile <- paste("/home/ian/Desktop/groupoid finding codes/fibers/tests/testthat/testNetworks/out", testNetworkId, ".txt", sep = "")
+  configuration$InputFile <- paste("/home/ian/Desktop/groupoid_finding_codes/fibers/tests/testthat/testNetworks/test", testNetworkId, ".txt", sep = "")
+  configuration$OutputFile <- paste("/home/ian/Desktop/groupoid_finding_codes/fibers/tests/testthat/testNetworks/out", testNetworkId, ".txt", sep = "")
   return(configuration)
 }
 
