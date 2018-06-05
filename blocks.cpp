@@ -1,5 +1,6 @@
 #include "blocks.h"
 #include <iostream>
+#include <fstream>
 
 bool BuildingBlock::addNode(int id, int color) {
 	for(int i = 0; i < nodes.size(); i++) {
@@ -31,6 +32,17 @@ void BuildingBlock::print() {
 	for(int i = 0; i < nodes.size(); i++) {
 		cout << nodes[i] << endl;
 	}
+	ofstream buildingBlockFile;
+	buildingBlockFile.open("buildingBlocks.txt", ofstream::out | ofstream::app);
+	/*for(int i = 0; i < groupoidIds.size(); i++) {
+		fiberFile << i << "\t" << groupoidIds[i] << endl;
+	}*/
+	buildingBlockFile << id << ":\t";
+	for(int i = 0; i < nodes.size() - 1; i++) {
+		buildingBlockFile << nodes[i] << ", ";
+	}
+	buildingBlockFile << nodes[nodes.size() - 1] << endl;
+	buildingBlockFile.close();
 	/*cout << "Colors:" << endl;
 	for(int i = 0; i < colors.size(); i++) {
 		cout << i << ":\t" << colors[i] << endl;
