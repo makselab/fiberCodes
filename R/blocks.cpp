@@ -28,10 +28,6 @@ bool BuildingBlock::isAddableColor(int color) {
 }
 
 void BuildingBlock::print() {
-	cout << "Building block id = " << id << ". Nodes:" << endl;
-	for(int i = 0; i < nodes.size(); i++) {
-		cout << nodes[i] << endl;
-	}
 	ofstream buildingBlockFile;
 	buildingBlockFile.open("buildingBlocks.txt", ofstream::out | ofstream::app);
 	/*for(int i = 0; i < groupoidIds.size(); i++) {

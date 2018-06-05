@@ -209,10 +209,6 @@ void Processor::readConnectionsFile() {
 }
 
 void Processor::printGroupoids(vector<int> groupoidIds) {
-	for(int i = 0; i < groupoidIds.size(); i++) {
-		cout << i << "\t" << groupoidIds[i] << endl;
-	}
-
 	ofstream fiberFile;
 	fiberFile.open("fibers.txt");
 	for(int i = 0; i < groupoidIds.size(); i++) {
