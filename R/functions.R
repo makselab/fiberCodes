@@ -1,5 +1,5 @@
 getFileNames <- function() {
-  fileNames <- read.delim("fileNames.txt", header = F)
+  fileNames <- read.delim("/home/ian/Desktop/groupoid finding codes/fibers/R/fileNames.txt", header = F)
   fileNames <- fileNames %>%
     separate(1, c("Type", "Path"), sep = ":[ \t]")
   fileNames$Type <- gsub(" ", "", fileNames$Type)
@@ -11,7 +11,7 @@ getFileNames <- function() {
 }
 
 readConfigurationFile <- function() {
-  configuration <- read.delim(file = "fiberConfig.txt", header = F, stringsAsFactors = F)
+  configuration <- read.delim(file = "/home/ian/Desktop/groupoid finding codes/fibers/R/fiberConfig.txt", header = F, stringsAsFactors = F)
   configuration <- configuration %>%
     separate(1, c("Parameter", "Value"), sep = ":[ \t]")
   configuration$Parameter <- gsub(" ", "", configuration$Parameter)
@@ -19,9 +19,6 @@ readConfigurationFile <- function() {
   colnames(configuration) <- configuration[1, ]
   configuration <- configuration[-1, ]
   rownames(configuration) <- c()
-  configuration$BlocksOutputFile <- gsub(".txt", "_blocks.txt", configuration$OutputFile)
-  configuration$NodesOutputFile <- gsub(".txt", "_nodes.csv", configuration$OutputFile)
-  configuration$EdgesOutputFile <- gsub(".txt", "_edges.csv", configuration$OutputFile)
   return(configuration)
 }
 
@@ -32,7 +29,7 @@ readNetworkFile <- function(configuration) {
   } else {
     numberOfColumns <- 2
   }
-  
+
   rawInput <- read.delim(configuration$InputFile, header = F, sep = "\n")
   network <- rawInput %>%
     separate(1, paste(c(1:numberOfColumns), sep = ", "), sep = "[ \t]")
@@ -139,7 +136,7 @@ getBuildingBlocksFromCodeOutput <- function(nodeMap, fileNames) {
   buildingBlocks <- buildingBlocks %>%
     separate(1, c("Id", "Nodes"), sep = ":[ \t]")
   buildingBlocks$Nodes[3]
-  
+
   for(i in 1:nrow(buildingBlocks)) {
     block <- data.frame(strsplit(buildingBlocks$Nodes[i], ", "), stringsAsFactors = F)
     colnames(block)[1] <- "NodeId"
@@ -155,13 +152,16 @@ getBuildingBlocksFromCodeOutput <- function(nodeMap, fileNames) {
 }
 
 writeOutputToFiles <- function(configuration, fibers, buildingBlocks, nodeMap, network, fileNames) {
+  configuration$BlocksOutputFile <- gsub(".txt", "_blocks.txt", configuration$OutputFile)
+  configuration$NodesOutputFile <- gsub(".txt", "_nodes.csv", configuration$OutputFile)
+  configuration$EdgesOutputFile <- gsub(".txt", "_edges.csv", configuration$OutputFile)
   write.table(fibers, file = configuration$OutputFile, quote = F, row.names = F, col.names = F, sep = ":\t")
   write.table(buildingBlocks, file = configuration$BlocksOutputFile, quote = F, row.names = F, col.names = F, sep = ":\t")
-  
+
   csvNodeMap <- nodeMap
   csvNodeMap$Id <- csvNodeMap$Label
   write.csv(csvNodeMap, file = configuration$NodesOutputFile, quote = F, row.names = F)
-  
+
   csvNetwork <- network
   if(configuration$Directed == "1") {
     csvNetwork$Type <- "directed"
