@@ -1,6 +1,0 @@
-Directed: 0
-Weighted: 0
-CSV: 0
-Gephi: 1
-Input File: tests/test1.txt
-Ourput File: tests/out1.txt
