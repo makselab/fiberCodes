@@ -1,13 +1,13 @@
-a b undirected process(unknown)
-a d undirected process(unknown)
-b c undirected process(unknown)
-b e undirected process(unknown)
-c f undirected process(unknown)
-d e undirected process(unknown)
-d g undirected process(unknown)
-e f undirected process(unknown)
-e h undirected process(unknown)
-f i undirected process(unknown)
-g h undirected process(unknown)
-h i undirected process(unknown)
+a b
+a d
+b c
+b e
+c f
+d e
+d g
+e f
+e h
+f i
+g h
+h i
 
