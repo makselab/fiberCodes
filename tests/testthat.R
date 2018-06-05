@@ -1,4 +1,3 @@
 library(testthat)
-library(fibers)
 
-test_check("fibers")
+test_dir("/home/ian/Desktop/groupoid finding codes/fibers/tests/testthat")
