@@ -76,6 +76,10 @@ getWeightIdByName <- function(weightName, weightMap) {
   return(weightMap[grep(paste("^", weightName, "$", sep = ""), weightMap$Name), 2])
 }
 
+isNodeInBlockByLabel <- function(label, block) {
+  return(grep(paste("[ ^]", label, "[$,]", sep = ""), block))
+}
+
 getTransformedConnectivity <- function(configuration, network, nodeMap, weightMap) {
   connectivity <- network
   for(i in 1:nrow(connectivity)) {
