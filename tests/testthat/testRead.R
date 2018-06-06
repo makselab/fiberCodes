@@ -1,3 +1,5 @@
+library(tidyr)
+library(dplyr)
 source("/home/ian/Desktop/groupoid_finding_codes/fibers/R/functions.R")
 
 context("Checking that we read network files properly")

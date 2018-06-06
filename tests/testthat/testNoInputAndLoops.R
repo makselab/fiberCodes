@@ -1,3 +1,5 @@
+library(tidyr)
+library(dplyr)
 source("/home/ian/Desktop/groupoid_finding_codes/fibers/R/functions.R")
 
 context("Check that code works correctly on networks with nodes without inputs or with the loop")
@@ -5,9 +7,9 @@ context("Check that code works correctly on networks with nodes without inputs o
 getTestFileNames <- function() {
   columnNames <- c("AdjacencyFile", "FiberFile", "BuildingBlocksFile")
   fileNames <- data.frame(matrix(vector(), nrow = 1, ncol = length(columnNames), dimnames = list(c(), columnNames)), stringsAsFactors = F)
-  fileNames$AdjacencyFile <- "/home/ian/Desktop/groupoid_finding_codes/fibers/R/adjacency.txt"
-  fileNames$FiberFile <- "/home/ian/Desktop/groupoid_finding_codes/fibers/R/fibers.txt"
-  fileNames$BuildingBlocksFile <- "/home/ian/Desktop/groupoid_finding_codes/fibers/R/buildingBlocks.txt"
+  fileNames$AdjacencyFile <- "/home/ian/Desktop/groupoid_finding_codes/fibers/tests/testthat/adjacency.txt"
+  fileNames$FiberFile <- "/home/ian/Desktop/groupoid_finding_codes/fibers/tests/testthat/fibers.txt"
+  fileNames$BuildingBlocksFile <- "/home/ian/Desktop/groupoid_finding_codes/fibers/tests/testthat/buildingBlocks.txt"
   return(fileNames)
 }
 
@@ -22,8 +24,9 @@ getTestConfiguration <- function(directed, weighted, testNetworkId) {
 }
 
 test_that("Two trees with the same leaves. One head has loop, other one doesn't", {
+  fileNames <- getTestFileNames()
   configuration <- getTestConfiguration(1, 1, 7)
-  
+
   network <- readNetworkFile(configuration)
   nodeMap <- createNodeMap(network)
   if(configuration$Weighted == "1") {
@@ -31,11 +34,8 @@ test_that("Two trees with the same leaves. One head has loop, other one doesn't"
   }
   connectivity <- getTransformedConnectivity(configuration, network, nodeMap, weightMap)
   writeToAdjacencyFile(configuration, nodeMap, weightMap, connectivity, fileNames)
-  
+
   codePreactions(fileNames)
-  # TODO: make the key to recompile the code or not
-  # TODO: properly check if code returned 1
-  system("g++ -std=c++11 /home/ian/Desktop/groupoid_finding_codes/fibers/R/main.cpp /home/ian/Desktop/groupoid_finding_codes/fibers/R/processor.cpp /home/ian/Desktop/groupoid_finding_codes/fibers/R/node.cpp /home/ian/Desktop/groupoid_finding_codes/fibers/R/blocks.cpp -o /home/ian/Desktop/groupoid_finding_codes/fibers/tests/testthat/exec")
   system("/home/ian/Desktop/groupoid_finding_codes/fibers/tests/testthat/exec")
   nodeMap <- getFibersFromCodeOutput(nodeMap, fileNames)
   fibers <- prepareFibersOutput(nodeMap)
@@ -46,8 +46,9 @@ test_that("Two trees with the same leaves. One head has loop, other one doesn't"
 })
 
 test_that("Network with 2 not connected synchronized stars. Checking that they are in a different fiber", {
+  fileNames <- getTestFileNames()
   configuration <- getTestConfiguration(1, 1, 8)
-  
+
   network <- readNetworkFile(configuration)
   nodeMap <- createNodeMap(network)
   if(configuration$Weighted == "1") {
@@ -55,11 +56,8 @@ test_that("Network with 2 not connected synchronized stars. Checking that they a
   }
   connectivity <- getTransformedConnectivity(configuration, network, nodeMap, weightMap)
   writeToAdjacencyFile(configuration, nodeMap, weightMap, connectivity, fileNames)
-  
+
   codePreactions(fileNames)
-  # TODO: make the key to recompile the code or not
-  # TODO: properly check if code returned 1
-  system("g++ -std=c++11 /home/ian/Desktop/groupoid_finding_codes/fibers/R/main.cpp /home/ian/Desktop/groupoid_finding_codes/fibers/R/processor.cpp /home/ian/Desktop/groupoid_finding_codes/fibers/R/node.cpp /home/ian/Desktop/groupoid_finding_codes/fibers/R/blocks.cpp -o /home/ian/Desktop/groupoid_finding_codes/fibers/tests/testthat/exec")
   system("/home/ian/Desktop/groupoid_finding_codes/fibers/tests/testthat/exec")
   nodeMap <- getFibersFromCodeOutput(nodeMap, fileNames)
   fibers <- prepareFibersOutput(nodeMap)
@@ -69,8 +67,9 @@ test_that("Network with 2 not connected synchronized stars. Checking that they a
 
 
 test_that("This test reminds us that there is a bug with 2 2-BTFs shown as being synchronous", {
+  fileNames <- getTestFileNames()
   configuration <- getTestConfiguration(1, 0, 9)
-  
+
   network <- readNetworkFile(configuration)
   nodeMap <- createNodeMap(network)
   if(configuration$Weighted == "1") {
@@ -78,11 +77,8 @@ test_that("This test reminds us that there is a bug with 2 2-BTFs shown as being
   }
   connectivity <- getTransformedConnectivity(configuration, network, nodeMap, weightMap)
   writeToAdjacencyFile(configuration, nodeMap, weightMap, connectivity, fileNames)
-  
+
   codePreactions(fileNames)
-  # TODO: make the key to recompile the code or not
-  # TODO: properly check if code returned 1
-  system("g++ -std=c++11 /home/ian/Desktop/groupoid_finding_codes/fibers/R/main.cpp /home/ian/Desktop/groupoid_finding_codes/fibers/R/processor.cpp /home/ian/Desktop/groupoid_finding_codes/fibers/R/node.cpp /home/ian/Desktop/groupoid_finding_codes/fibers/R/blocks.cpp -o /home/ian/Desktop/groupoid_finding_codes/fibers/tests/testthat/exec")
   system("/home/ian/Desktop/groupoid_finding_codes/fibers/tests/testthat/exec")
   nodeMap <- getFibersFromCodeOutput(nodeMap, fileNames)
   fibers <- prepareFibersOutput(nodeMap)
@@ -91,8 +87,9 @@ test_that("This test reminds us that there is a bug with 2 2-BTFs shown as being
 })
 
 test_that("This test reminds us that there is a bug with 2 3-BTFs shown as being synchronous", {
+  fileNames <- getTestFileNames()
   configuration <- getTestConfiguration(1, 0, 10)
-  
+
   network <- readNetworkFile(configuration)
   nodeMap <- createNodeMap(network)
   if(configuration$Weighted == "1") {
@@ -100,11 +97,8 @@ test_that("This test reminds us that there is a bug with 2 3-BTFs shown as being
   }
   connectivity <- getTransformedConnectivity(configuration, network, nodeMap, weightMap)
   writeToAdjacencyFile(configuration, nodeMap, weightMap, connectivity, fileNames)
-  
+
   codePreactions(fileNames)
-  # TODO: make the key to recompile the code or not
-  # TODO: properly check if code returned 1
-  system("g++ -std=c++11 /home/ian/Desktop/groupoid_finding_codes/fibers/R/main.cpp /home/ian/Desktop/groupoid_finding_codes/fibers/R/processor.cpp /home/ian/Desktop/groupoid_finding_codes/fibers/R/node.cpp /home/ian/Desktop/groupoid_finding_codes/fibers/R/blocks.cpp -o /home/ian/Desktop/groupoid_finding_codes/fibers/tests/testthat/exec")
   system("/home/ian/Desktop/groupoid_finding_codes/fibers/tests/testthat/exec")
   nodeMap <- getFibersFromCodeOutput(nodeMap, fileNames)
   fibers <- prepareFibersOutput(nodeMap)
@@ -114,8 +108,9 @@ test_that("This test reminds us that there is a bug with 2 3-BTFs shown as being
 
 
 test_that("This test reminds us that there is a bug with 2 CF shown as being synchronous", {
+  fileNames <- getTestFileNames()
   configuration <- getTestConfiguration(1, 0, 11)
-  
+
   network <- readNetworkFile(configuration)
   nodeMap <- createNodeMap(network)
   if(configuration$Weighted == "1") {
@@ -123,11 +118,8 @@ test_that("This test reminds us that there is a bug with 2 CF shown as being syn
   }
   connectivity <- getTransformedConnectivity(configuration, network, nodeMap, weightMap)
   writeToAdjacencyFile(configuration, nodeMap, weightMap, connectivity, fileNames)
-  
+
   codePreactions(fileNames)
-  # TODO: make the key to recompile the code or not
-  # TODO: properly check if code returned 1
-  system("g++ -std=c++11 /home/ian/Desktop/groupoid_finding_codes/fibers/R/main.cpp /home/ian/Desktop/groupoid_finding_codes/fibers/R/processor.cpp /home/ian/Desktop/groupoid_finding_codes/fibers/R/node.cpp /home/ian/Desktop/groupoid_finding_codes/fibers/R/blocks.cpp -o /home/ian/Desktop/groupoid_finding_codes/fibers/tests/testthat/exec")
   system("/home/ian/Desktop/groupoid_finding_codes/fibers/tests/testthat/exec")
   nodeMap <- getFibersFromCodeOutput(nodeMap, fileNames)
   fibers <- prepareFibersOutput(nodeMap)

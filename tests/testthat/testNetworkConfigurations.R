@@ -1,3 +1,5 @@
+library(tidyr)
+library(dplyr)
 source("/home/ian/Desktop/groupoid_finding_codes/fibers/R/functions.R")
 
 context("Check outputs for test networks")
@@ -5,9 +7,9 @@ context("Check outputs for test networks")
 getTestFileNames <- function() {
   columnNames <- c("AdjacencyFile", "FiberFile", "BuildingBlocksFile")
   fileNames <- data.frame(matrix(vector(), nrow = 1, ncol = length(columnNames), dimnames = list(c(), columnNames)), stringsAsFactors = F)
-  fileNames$AdjacencyFile <- "/home/ian/Desktop/groupoid_finding_codes/fibers/R/adjacency.txt"
-  fileNames$FiberFile <- "/home/ian/Desktop/groupoid_finding_codes/fibers/R/fibers.txt"
-  fileNames$BuildingBlocksFile <- "/home/ian/Desktop/groupoid_finding_codes/fibers/R/buildingBlocks.txt"
+  fileNames$AdjacencyFile <- "/home/ian/Desktop/groupoid_finding_codes/fibers/tests/testthat/adjacency.txt"
+  fileNames$FiberFile <- "/home/ian/Desktop/groupoid_finding_codes/fibers/tests/testthat/fibers.txt"
+  fileNames$BuildingBlocksFile <- "/home/ian/Desktop/groupoid_finding_codes/fibers/tests/testthat/buildingBlocks.txt"
   return(fileNames)
 }
 
@@ -22,6 +24,7 @@ getTestConfiguration <- function(directed, weighted, testNetworkId) {
 }
 
 test_that("Check fibers of undirected unweighted network", {
+  fileNames <- getTestFileNames()
   configuration <- getTestConfiguration(0, 0, 1)
 
   network <- readNetworkFile(configuration)
@@ -33,9 +36,6 @@ test_that("Check fibers of undirected unweighted network", {
   writeToAdjacencyFile(configuration, nodeMap, weightMap, connectivity, fileNames)
 
   codePreactions(fileNames)
-  # TODO: make the key to recompile the code or not
-  # TODO: properly check if code returned 1
-  system("g++ -std=c++11 /home/ian/Desktop/groupoid_finding_codes/fibers/R/main.cpp /home/ian/Desktop/groupoid_finding_codes/fibers/R/processor.cpp /home/ian/Desktop/groupoid_finding_codes/fibers/R/node.cpp /home/ian/Desktop/groupoid_finding_codes/fibers/R/blocks.cpp -o /home/ian/Desktop/groupoid_finding_codes/fibers/tests/testthat/exec")
   system("/home/ian/Desktop/groupoid_finding_codes/fibers/tests/testthat/exec")
   nodeMap <- getFibersFromCodeOutput(nodeMap, fileNames)
   fibers <- prepareFibersOutput(nodeMap)
@@ -45,6 +45,7 @@ test_that("Check fibers of undirected unweighted network", {
 })
 
 test_that("Check fibers of undirected weighted network", {
+  fileNames <- getTestFileNames()
   configuration <- getTestConfiguration(0, 1, 2)
 
   network <- readNetworkFile(configuration)
@@ -56,9 +57,6 @@ test_that("Check fibers of undirected weighted network", {
   writeToAdjacencyFile(configuration, nodeMap, weightMap, connectivity, fileNames)
 
   codePreactions(fileNames)
-  # TODO: make the key to recompile the code or not
-  # TODO: properly check if code returned 1
-  system("g++ -std=c++11 /home/ian/Desktop/groupoid_finding_codes/fibers/R/main.cpp /home/ian/Desktop/groupoid_finding_codes/fibers/R/processor.cpp /home/ian/Desktop/groupoid_finding_codes/fibers/R/node.cpp /home/ian/Desktop/groupoid_finding_codes/fibers/R/blocks.cpp -o /home/ian/Desktop/groupoid_finding_codes/fibers/tests/testthat/exec")
   system("/home/ian/Desktop/groupoid_finding_codes/fibers/tests/testthat/exec")
   nodeMap <- getFibersFromCodeOutput(nodeMap, fileNames)
   fibers <- prepareFibersOutput(nodeMap)
@@ -68,6 +66,7 @@ test_that("Check fibers of undirected weighted network", {
 })
 
 test_that("Check fibers of directed unweighted network", {
+  fileNames <- getTestFileNames()
   configuration <- getTestConfiguration(1, 0, 3)
 
   network <- readNetworkFile(configuration)
@@ -79,9 +78,6 @@ test_that("Check fibers of directed unweighted network", {
   writeToAdjacencyFile(configuration, nodeMap, weightMap, connectivity, fileNames)
 
   codePreactions(fileNames)
-  # TODO: make the key to recompile the code or not
-  # TODO: properly check if code returned 1
-  system("g++ -std=c++11 /home/ian/Desktop/groupoid_finding_codes/fibers/R/main.cpp /home/ian/Desktop/groupoid_finding_codes/fibers/R/processor.cpp /home/ian/Desktop/groupoid_finding_codes/fibers/R/node.cpp /home/ian/Desktop/groupoid_finding_codes/fibers/R/blocks.cpp -o /home/ian/Desktop/groupoid_finding_codes/fibers/tests/testthat/exec")
   system("/home/ian/Desktop/groupoid_finding_codes/fibers/tests/testthat/exec")
   nodeMap <- getFibersFromCodeOutput(nodeMap, fileNames)
   fibers <- prepareFibersOutput(nodeMap)
@@ -89,6 +85,7 @@ test_that("Check fibers of directed unweighted network", {
 })
 
 test_that("Check fibers of directed weighted network", {
+  fileNames <- getTestFileNames()
   configuration <- getTestConfiguration(1, 1, 4)
 
   network <- readNetworkFile(configuration)
@@ -100,9 +97,6 @@ test_that("Check fibers of directed weighted network", {
   writeToAdjacencyFile(configuration, nodeMap, weightMap, connectivity, fileNames)
 
   codePreactions(fileNames)
-  # TODO: make the key to recompile the code or not
-  # TODO: properly check if code returned 1
-  system("g++ -std=c++11 /home/ian/Desktop/groupoid_finding_codes/fibers/R/main.cpp /home/ian/Desktop/groupoid_finding_codes/fibers/R/processor.cpp /home/ian/Desktop/groupoid_finding_codes/fibers/R/node.cpp /home/ian/Desktop/groupoid_finding_codes/fibers/R/blocks.cpp -o /home/ian/Desktop/groupoid_finding_codes/fibers/tests/testthat/exec")
   system("/home/ian/Desktop/groupoid_finding_codes/fibers/tests/testthat/exec")
   nodeMap <- getFibersFromCodeOutput(nodeMap, fileNames)
   fibers <- prepareFibersOutput(nodeMap)
@@ -112,6 +106,7 @@ test_that("Check fibers of directed weighted network", {
 })
 
 test_that("Check fibers in more complicated undirected weighted network", {
+  fileNames <- getTestFileNames()
   configuration <- getTestConfiguration(0, 1, 5)
 
   network <- readNetworkFile(configuration)
@@ -123,9 +118,6 @@ test_that("Check fibers in more complicated undirected weighted network", {
   writeToAdjacencyFile(configuration, nodeMap, weightMap, connectivity, fileNames)
 
   codePreactions(fileNames)
-  # TODO: make the key to recompile the code or not
-  # TODO: properly check if code returned 1
-  system("g++ -std=c++11 /home/ian/Desktop/groupoid_finding_codes/fibers/R/main.cpp /home/ian/Desktop/groupoid_finding_codes/fibers/R/processor.cpp /home/ian/Desktop/groupoid_finding_codes/fibers/R/node.cpp /home/ian/Desktop/groupoid_finding_codes/fibers/R/blocks.cpp -o /home/ian/Desktop/groupoid_finding_codes/fibers/tests/testthat/exec")
   system("/home/ian/Desktop/groupoid_finding_codes/fibers/tests/testthat/exec")
   nodeMap <- getFibersFromCodeOutput(nodeMap, fileNames)
   fibers <- prepareFibersOutput(nodeMap)
@@ -135,6 +127,7 @@ test_that("Check fibers in more complicated undirected weighted network", {
 })
 
 test_that("Check fibers in more complicated directed weighted network with slaves", {
+  fileNames <- getTestFileNames()
   configuration <- getTestConfiguration(1, 1, 6)
 
   network <- readNetworkFile(configuration)
@@ -146,9 +139,6 @@ test_that("Check fibers in more complicated directed weighted network with slave
   writeToAdjacencyFile(configuration, nodeMap, weightMap, connectivity, fileNames)
 
   codePreactions(fileNames)
-  # TODO: make the key to recompile the code or not
-  # TODO: properly check if code returned 1
-  system("g++ -std=c++11 /home/ian/Desktop/groupoid_finding_codes/fibers/R/main.cpp /home/ian/Desktop/groupoid_finding_codes/fibers/R/processor.cpp /home/ian/Desktop/groupoid_finding_codes/fibers/R/node.cpp /home/ian/Desktop/groupoid_finding_codes/fibers/R/blocks.cpp -o /home/ian/Desktop/groupoid_finding_codes/fibers/tests/testthat/exec")
   system("/home/ian/Desktop/groupoid_finding_codes/fibers/tests/testthat/exec")
   nodeMap <- getFibersFromCodeOutput(nodeMap, fileNames)
   fibers <- prepareFibersOutput(nodeMap)
