@@ -125,7 +125,10 @@ getFibersFromCodeOutput <- function(nodeMap, fileNames) {
   fibers <- read.delim(fileNames$FiberFile, header = F, sep = "\t")
   colnames(fibers)[1] <- "Id"
   colnames(fibers)[2] <- "FiberId"
-  nodeMap <- cbind(nodeMap, fibers)[, c(2, 1, 4)]
+  for(i in 1:nrow(nodeMap)) {
+    nodeMap$FiberId[i] <- fibers[grep(paste("^", nodeMap$Id[i], "$", sep = ""), fibers$Id), "FiberId"]
+  }
+  nodeMap <- nodeMap[, c(2, 1, 3)]
   return(nodeMap)
 }
 
@@ -177,8 +180,12 @@ writeOutputToFiles <- function(configuration, fibers, buildingBlocks, nodeMap, n
     csvNetwork$Type <- "undirected"
   }
   write.csv(csvNetwork, file = configuration$EdgesOutputFile, quote = F, row.names = F)
-  writeBuldingBlocksToFiles(configuration, buildingBlocks, nodeMap, csvNetwork)
+  if(configuration$BuildingBlocks == "1") {
+    writeBuldingBlocksToFiles(configuration, buildingBlocks, nodeMap, csvNetwork)
+  }
 }
+
+library(igraph)
 
 writeBuldingBlocksToFiles <- function(configuration, buildingBlocks, nodeMap, csvNetwork) {
   configuration$OutputPath <- gsub(".[A-z]{3}$", "", configuration$OutputFile)
@@ -209,5 +216,15 @@ writeBuldingBlocksToFiles <- function(configuration, buildingBlocks, nodeMap, cs
     # write to edges file
     fileName <- paste(configuration$OutputPath, "/", buildingBlocks$Id[i], "_edges.csv", sep = "")
     write.csv(blockConnections, file = fileName, quote = F, row.names = F)
+    nodes <- block
+    edges <- blockConnections
+    network <- graph_from_data_frame(d = edges, vertices = nodes, directed = as.integer(configuration$Directed))
+    V(network)$label.size <- 30
+    V(network)$color <- group_indices(nodes, FiberId)
+    edge.col <- edges$Weight
+
+    png(filename = paste(configuration$OutputPath, "/", buildingBlocks$Id[i], ".png", sep = ""), width = 1280, height = 720)
+    plot(network, edge.color = edges$color, vertex.label.cex = 2.5)
+    dev.off()
   }
 }
