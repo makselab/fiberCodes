@@ -42,6 +42,7 @@ main <- function() {
   buildingBlocks <- getBuildingBlocksFromCodeOutput(nodeMap, fileNames)
   writeComment("Printing output to output files...", start.time)
   writeOutputToFiles(configuration, fibers, buildingBlocks, nodeMap, network, fileNames)
+  writeComment("Done", start.time)
 }
 
 main()

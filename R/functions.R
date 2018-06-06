@@ -81,7 +81,7 @@ getWeightIdByName <- function(weightName, weightMap) {
 }
 
 isNodeInBlockByLabel <- function(label, block) {
-  return(grep(paste("(^| )", label, "($|,)", sep = ""), block))
+  return(grepl(paste("(^| )", label, "($|,)", sep = ""), block))
 }
 
 getTransformedConnectivity <- function(configuration, network, nodeMap, weightMap) {
@@ -177,4 +177,37 @@ writeOutputToFiles <- function(configuration, fibers, buildingBlocks, nodeMap, n
     csvNetwork$Type <- "undirected"
   }
   write.csv(csvNetwork, file = configuration$EdgesOutputFile, quote = F, row.names = F)
+  writeBuldingBlocksToFiles(configuration, buildingBlocks, nodeMap, csvNetwork)
+}
+
+writeBuldingBlocksToFiles <- function(configuration, buildingBlocks, nodeMap, csvNetwork) {
+  configuration$OutputPath <- gsub(".[A-z]{3}$", "", configuration$OutputFile)
+  configuration$OutputPath <- paste(configuration$OutputPath, "buildingBlocks", sep = "")
+  system(paste("mkdir ", configuration$OutputPath, sep = ""))
+
+  for(i in 1:nrow(buildingBlocks)) {
+    if(i %% 10 == 1) {print(paste("Writing ", i, "/", nrow(buildingBlocks), "th building block", sep = ""))}
+    # get nodes data
+    block <- data.frame(strsplit(buildingBlocks$Nodes[i], ", "), stringsAsFactors = F)
+    colnames(block)[1] <- "Id"
+    block$Label <- block$Id
+    for(j in 1:nrow(block)) {
+      block$FiberId[j] <- getNodeFiberIdByLabel(block$Label[j], nodeMap)
+    }
+    # write to nodes file
+    fileName <- paste(configuration$OutputPath, "/", buildingBlocks$Id[i], "_nodes.csv", sep = "")
+    write.csv(block, file = fileName, quote = F, row.names = F)
+
+    # get edges data
+    columnNames <- colnames(csvNetwork)
+    blockConnections <- data.frame(matrix(vector(), nrow = 0, ncol = length(columnNames), dimnames = list(c(), columnNames)), stringsAsFactors = F)
+    for(j in 1:nrow(csvNetwork)) {
+      if((isNodeInBlockByLabel(csvNetwork$Source[j], buildingBlocks$Nodes[i]) == 1) && (isNodeInBlockByLabel(csvNetwork$Target[j], buildingBlocks$Nodes[i]) == 1)) {
+        blockConnections <- rbind(blockConnections, csvNetwork[j, ])
+      }
+    }
+    # write to edges file
+    fileName <- paste(configuration$OutputPath, "/", buildingBlocks$Id[i], "_edges.csv", sep = "")
+    write.csv(blockConnections, file = fileName, quote = F, row.names = F)
+  }
 }
