@@ -65,11 +65,11 @@ createWeightMap <- function(network) {
 }
 
 getNodeIdByLabel <- function(nodeLabel, nodeMap) {
-  return(nodeMap[grep(paste("^", nodeLabel, "$", sep = ""), nodeMap$Label), 2])
+  return(nodeMap[grep(paste("^", nodeLabel, "$", sep = ""), nodeMap$Label), "Id"])
 }
 
 getNodeLabelById <- function(id, nodeMap) {
-  return(nodeMap[grep(paste("^", id, "$", sep = ""), nodeMap$Id), 1])
+  return(nodeMap[grep(paste("^", id, "$", sep = ""), nodeMap$Id), "Label"])
 }
 
 getWeightIdByName <- function(weightName, weightMap) {
@@ -136,7 +136,6 @@ getBuildingBlocksFromCodeOutput <- function(nodeMap, fileNames) {
   buildingBlocks <- read.delim(fileNames$BuildingBlocksFile, header = F, sep = "\n")
   buildingBlocks <- buildingBlocks %>%
     separate(1, c("Id", "Nodes"), sep = ":[ \t]")
-  buildingBlocks$Nodes[3]
 
   for(i in 1:nrow(buildingBlocks)) {
     block <- data.frame(strsplit(buildingBlocks$Nodes[i], ", "), stringsAsFactors = F)
