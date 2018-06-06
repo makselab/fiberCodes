@@ -221,7 +221,9 @@ writeBuldingBlocksToFiles <- function(configuration, buildingBlocks, nodeMap, cs
     network <- graph_from_data_frame(d = edges, vertices = nodes, directed = as.integer(configuration$Directed))
     V(network)$label.size <- 30
     V(network)$color <- group_indices(nodes, FiberId)
-    edge.col <- group_indices(edges, Weight)
+    if(configuration$Weighted == "1") {
+      edge.col <- group_indices(edges, Weight)
+    }
 
     png(filename = paste(configuration$OutputPath, "/", buildingBlocks$Id[i], ".png", sep = ""), width = 1280, height = 720)
     plot(network, edge.color = edges$color, vertex.label.cex = 2.5)
