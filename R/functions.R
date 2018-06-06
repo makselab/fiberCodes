@@ -84,6 +84,7 @@ getTransformedConnectivity <- function(configuration, network, nodeMap, weightMa
     if(configuration$Weighted == "1") {
       connectivity[i, 3] <- getWeightIdByName(connectivity[i, 3], weightMap)
     }
+    if((i %% 10000) == 0) {print(paste("Transformed ", i, " connectivity lines", sep = ""))}
   }
   return(connectivity)
 }
