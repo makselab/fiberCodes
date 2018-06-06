@@ -68,6 +68,10 @@ getNodeIdByLabel <- function(nodeLabel, nodeMap) {
   return(nodeMap[grep(paste("^", nodeLabel, "$", sep = ""), nodeMap$Label), "Id"])
 }
 
+getNodeFiberIdByLabel <- function(nodeLabel, nodeMap) {
+  return(nodeMap[grep(paste("^", nodeLabel, "$", sep = ""), nodeMap$Label), "FiberId"])
+}
+
 getNodeLabelById <- function(id, nodeMap) {
   return(nodeMap[grep(paste("^", id, "$", sep = ""), nodeMap$Id), "Label"])
 }
@@ -77,7 +81,7 @@ getWeightIdByName <- function(weightName, weightMap) {
 }
 
 isNodeInBlockByLabel <- function(label, block) {
-  return(grep(paste("[ ^]", label, "[$,]", sep = ""), block))
+  return(grep(paste("(^| )", label, "($|,)", sep = ""), block))
 }
 
 getTransformedConnectivity <- function(configuration, network, nodeMap, weightMap) {
