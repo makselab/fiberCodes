@@ -1,5 +1,5 @@
 getFileNames <- function() {
-  fileNames <- read.delim("/home/ian/Desktop/groupoid finding codes/fibers/R/fileNames.txt", header = F)
+  fileNames <- read.delim("/home/ian/Desktop/groupoid_finding_codes/fibers/R/fileNames.txt", header = F)
   fileNames <- fileNames %>%
     separate(1, c("Type", "Path"), sep = ":[ \t]")
   fileNames$Type <- gsub(" ", "", fileNames$Type)
@@ -11,7 +11,7 @@ getFileNames <- function() {
 }
 
 readConfigurationFile <- function() {
-  configuration <- read.delim(file = "/home/ian/Desktop/groupoid finding codes/fibers/R/fiberConfig.txt", header = F, stringsAsFactors = F)
+  configuration <- read.delim(file = "/home/ian/Desktop/groupoid_finding_codes/fibers/R/fiberConfig.txt", header = F, stringsAsFactors = F)
   configuration <- configuration %>%
     separate(1, c("Parameter", "Value"), sep = ":[ \t]")
   configuration$Parameter <- gsub(" ", "", configuration$Parameter)
@@ -108,8 +108,8 @@ writeToAdjacencyFile <- function(configuration, nodeMap, weightMap, connectivity
 
 codePreactions <- function(fileNames) {
   # clear fiber and building block files before running code
-  file.remove(fileNames$BuildingBlocksFile)
-  file.remove(fileNames$FiberFile)
+  if(file.exists(fileNames$BuildingBlocksFile)) {file.remove(fileNames$BuildingBlocksFile)}
+  if(file.exists(fileNames$FiberFile)) {file.remove(fileNames$FiberFile)}
 }
 
 getFibersFromCodeOutput <- function(nodeMap, fileNames) {
