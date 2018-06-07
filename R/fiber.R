@@ -39,7 +39,9 @@ main <- function() {
   writeComment("Reading fibration code output...", start.time)
   nodeMap <- getFibersFromCodeOutput(nodeMap, fileNames)
   fibers <- prepareFibersOutput(nodeMap)
-  buildingBlocks <- getBuildingBlocksFromCodeOutput(nodeMap, fileNames)
+  if(configuration$BuildingBlocks == "1") {
+    buildingBlocks <- getBuildingBlocksFromCodeOutput(nodeMap, fileNames)
+  }
   writeComment("Printing output to output files...", start.time)
   writeOutputToFiles(configuration, fibers, buildingBlocks, nodeMap, network, fileNames)
   writeComment("Done", start.time)

@@ -1,5 +1,8 @@
+library(tidyr)
+library(dplyr)
+
 getFileNames <- function() {
-  fileNames <- read.delim("/home/ian/Desktop/groupoid_finding_codes/fibers/R/fileNames.txt", header = F)
+  fileNames <- read.delim("fileNames.txt", header = F)
   fileNames <- fileNames %>%
     separate(1, c("Type", "Path"), sep = ":[ \t]")
   fileNames$Type <- gsub(" ", "", fileNames$Type)
@@ -11,7 +14,7 @@ getFileNames <- function() {
 }
 
 readConfigurationFile <- function() {
-  configuration <- read.delim(file = "/home/ian/Desktop/groupoid_finding_codes/fibers/R/fiberConfig.txt", header = F, stringsAsFactors = F)
+  configuration <- read.delim(file = "fiberConfig.txt", header = F, stringsAsFactors = F)
   configuration <- configuration %>%
     separate(1, c("Parameter", "Value"), sep = ":[ \t]")
   configuration$Parameter <- gsub(" ", "", configuration$Parameter)
@@ -144,6 +147,11 @@ prepareFibersOutput <- function(nodeMap) {
 
 getBuildingBlocksFromCodeOutput <- function(nodeMap, fileNames) {
   # we need nodeMap here to run getNodeLabelById to get real names for nodes from building block
+  if(!file.exists(fileNames$BuildingBlocksFile)) {
+    buildingBlocks <- data.frame(matrix(vector(), nrow = 0, ncol = 2, dimnames = list(c(), c("Id", "Nodes"))), stringsAsFactors = F)
+    print("There are no building blocks")
+    return(buildingBlocks)
+  }
   buildingBlocks <- read.delim(fileNames$BuildingBlocksFile, header = F, sep = "\n")
   buildingBlocks <- buildingBlocks %>%
     separate(1, c("Id", "Nodes"), sep = ":[ \t]")
@@ -167,7 +175,9 @@ writeOutputToFiles <- function(configuration, fibers, buildingBlocks, nodeMap, n
   configuration$NodesOutputFile <- gsub(".txt", "_nodes.csv", configuration$OutputFile)
   configuration$EdgesOutputFile <- gsub(".txt", "_edges.csv", configuration$OutputFile)
   write.table(fibers, file = configuration$OutputFile, quote = F, row.names = F, col.names = F, sep = ":\t")
-  write.table(buildingBlocks, file = configuration$BlocksOutputFile, quote = F, row.names = F, col.names = F, sep = ":\t")
+  if(configuration$BuildingBlocks == "1") {
+    write.table(buildingBlocks, file = configuration$BlocksOutputFile, quote = F, row.names = F, col.names = F, sep = ":\t")
+  }
 
   csvNodeMap <- nodeMap
   csvNodeMap$Id <- csvNodeMap$Label
@@ -188,6 +198,7 @@ writeOutputToFiles <- function(configuration, fibers, buildingBlocks, nodeMap, n
 library(igraph)
 
 writeBuldingBlocksToFiles <- function(configuration, buildingBlocks, nodeMap, csvNetwork) {
+  if(nrow(buildingBlocks) == 0) {return()}
   configuration$OutputPath <- gsub(".[A-z]{3}$", "", configuration$OutputFile)
   configuration$OutputPath <- paste(configuration$OutputPath, "buildingBlocks", sep = "")
   system(paste("mkdir ", configuration$OutputPath, sep = ""))
