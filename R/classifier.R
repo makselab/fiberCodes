@@ -124,7 +124,8 @@ allSameInput <- function(edges) {
 start.time <- Sys.time()
 # starting work with unique block
 for(id in 0:max(tidyBlocks$Id)) {
-  #id <- 180
+  #print(id)
+  #id <- 0
   # first gather data about the block
   block <- tidyBlocks %>%
     filter(Id == id) %>%
@@ -151,11 +152,11 @@ for(id in 0:max(tidyBlocks$Id)) {
   }
   
   # this big structure of ifs is hard to understand, but it is drawn in block diagram in file blockdiagram.xml
-  if(!isOnlyMainFiber(block, fiberId)) {
-    blocks$Class[id + 1] <- "Multi-layered fiber"
+  if(isFiberSendingToRegulators(edges)) {
+    blocks$Class[id + 1] <- "Feedback fibration"
   } else {
-    if(isFiberSendingToRegulators(edges)) {
-      blocks$Class[id + 1] <- "Feedback fibration"
+    if(!isOnlyMainFiber(block, fiberId)) {
+      blocks$Class[id + 1] <- "Multi-layered fiber"
     } else {
       if(areAllNodesFromBlockInFiber(block)) {
         if(isSizeOfInputSetOne(block, edges)) {
