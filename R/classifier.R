@@ -35,31 +35,69 @@ tidyBlocks <- blocks %>%
   arrange(Id) %>%
   select(c(1, 3))
 
-# starting work with unique block
-id <- 63
-block <- tidyBlocks %>%
-  filter(Id == id) %>%
-  select("Node")
-
-# here we know, that the first line of block is the node, which belongs to main fiber, because that is how we form it using stack in building blocks section of C code
-# if that part of C code is changed, this part needs to be rewritten
-fiberId <- tidyFibers$Id[grep(paste(block$Node[1]), tidyFibers$Node)]
-fiber <- tidyFibers %>%
-  filter(Id == fiberId)
-
-log <- logical(nrow(block))
-
-for(i in 1:nrow(fiber)) {
-  log <- as.logical(log + grepl(paste("^", fiber$Node[i], "$", sep = ""), block$Node))
+isOnlyMainFiber <- function(block, fiberId) {
+  regulatorIds <- block[block$FiberId != fiberId, "FiberId"]
+  return(anyDuplicated(regulatorIds) == 0)
 }
 
-log <- data.frame(log)
-colnames(log) <- "NodeType"
-log[log == T] <- "Fiber"
-log[log == F] <- "Regulator"
+isFiberSendingToRegulators <- function(prefix, id, block) {
+  edgesFileName <- paste(prefix, "buildingBlocks/", id, "_edges.csv", sep = "")
+  edges <- read.csv(edgesFileName, stringsAsFactors = F)
+  
+  for(i in 1:nrow(edges)) {
+    edges$SourceType[i] <- block[grep(paste("^", edges$Source[i], "$", sep = ""), block$Node), "NodeType"]
+    edges$TargetType[i] <- block[grep(paste("^", edges$Target[i], "$", sep = ""), block$Node), "NodeType"]
+  }
+  
+  feedback <- edges %>%
+    filter(SourceType == "Fiber") %>%
+    filter(TargetType == "Regulator")
+  return(nrow(feedback) != 0)
+}
 
-block <- cbind(block, log)
-block
+areAllNodesFromBlockInFiber <- function(block) {
+  return(nrow(block[block$NodeType == "Regulator", ]) == 0)
+}
 
+start.time <- Sys.time()
+# starting work with unique block
+for(id in 0:max(tidyBlocks$Id)) {
+  #id <- 14
+  # first gather data about the block
+  block <- tidyBlocks %>%
+    filter(Id == id) %>%
+    select("Node")
+
+  for(i in 1:nrow(block)) {
+    block$FiberId[i] <- tidyFibers[grep(paste("^", block$Node[i], "$", sep = ""), tidyFibers$Node), "Id"]
+  }
+  # here we know, that the first line of block is the node, which belongs to main fiber, because that is how we form it using stack in building blocks section of C code
+  # if that part of C code is changed, this part needs to be rewritten
+  fiberId <- tidyFibers$Id[grep(paste("^", block$Node[1], "$", sep = ""), tidyFibers$Node)]
+  
+  block <- block %>%
+    mutate(NodeType = FiberId)
+  block[block$NodeType == fiberId, "NodeType"] <- "Fiber"
+  block[block$NodeType != "Fiber", "NodeType"] <- "Regulator"
+  
+  # this big structure of ifs is hard to understand, but it is drawn in block diagram in file blockdiagram.xml
+  if(!isOnlyMainFiber(block, fiberId)) {
+    blocks$Class[id + 1] <- "Multi-layered fiber"
+  } else {
+    if(isFiberSendingToRegulators(prefix, id, block)) {
+      blocks$Class[id + 1] <- "Feedback fibration"
+    } else {
+      if(areAllNodesFromBlockInFiber(block)) {
+        blocks$Class[id + 1] <- "All nodes in fiber"
+      } else {
+        blocks$Class[id + 1] <- "Unclassified"
+      }
+    }
+  }
+}
+now.time <- Sys.time()
+time.taken <- now.time - start.time
+print(time.taken)
+
+# result analysis
 classifiedByHand <- read.csv("human_HINT_classification.csv", stringsAsFactors = F)
-unique(classifiedByHand$Name)
