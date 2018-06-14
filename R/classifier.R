@@ -89,10 +89,42 @@ isOneNodeFromFiberRegulator <- function(edges) {
   return(numberOfFiberInputs$NumberOfInputs == 1)
 }
 
+chainCondition <- function(block, edges) {
+  # chain condition: only one node has no output, only one node has 2 outputs, all other nodes have 1 input and 1 output
+  for(i in 1:nrow(block)) {
+    numberOfOutputs <- edges %>%
+      filter(Source == block$Node[i]) %>%
+      summarise(NumberOfOutputs = n())
+    
+    numberOfInputs <- edges %>%
+      filter(Target == block$Node[i]) %>%
+      summarise(NumberOfInputs = n())
+    
+    block$NumberOfOutputs[i] <- numberOfOutputs$NumberOfOutputs[1]
+    block$NumberOfInputs[i] <- numberOfInputs$NumberOfInputs[1]
+  }
+  loopbackNode <- edges %>%
+    filter(Source == Target)
+  loopbackNode <- loopbackNode$Source[1]
+  
+  loopTwoOutputs <- block[block$Node == loopbackNode, "NumberOfOutputs"] == 2
+  oneNoOutputNode <- nrow(block[block$NumberOfOutputs == 0, ]) == 1
+  otherNodesOneOne <- (nrow(block[(block$NumberOfOutputs != 0) & (block$NumberOfOutputs != 2), ]) == nrow(block) - 2)
+  
+  return(loopTwoOutputs & oneNoOutputNode & otherNodesOneOne)
+}
+
+allSameInput <- function(edges) {
+  sources <- edges %>%
+    group_by(Source) %>%
+    summarise(N = n())
+  return(nrow(sources) == 1)
+}
+
 start.time <- Sys.time()
 # starting work with unique block
 for(id in 0:max(tidyBlocks$Id)) {
-  #id <- 270
+  #id <- 180
   # first gather data about the block
   block <- tidyBlocks %>%
     filter(Id == id) %>%
@@ -127,7 +159,15 @@ for(id in 0:max(tidyBlocks$Id)) {
     } else {
       if(areAllNodesFromBlockInFiber(block)) {
         if(isSizeOfInputSetOne(block, edges)) {
-          blocks$Class[id + 1] <- "Star or chain"
+          if(chainCondition(block, edges)) {
+            blocks$Class[id + 1] <- "Chain"
+          } else {
+            if(allSameInput(edges)) {
+              blocks$Class[id + 1] <- "Synchronized star"
+            } else {
+              blocks$Class[id + 1] <- "Chain-Star"
+            }
+          }
         } else {
           blocks$Class[id + 1] <- "n > 1"
         }
@@ -153,11 +193,6 @@ now.time <- Sys.time()
 time.taken <- now.time - start.time
 print(time.taken)
 
-edges
-# for next function
-inputNodes <- edges %>%
-  filter(Target == block$Node[i]) %>%
-  select(Source)
 # result analysis
 classifiedByHand <- read.csv("human_HINT_classification.csv", stringsAsFactors = F)
 classifiedByHand <- cbind(blocks, classifiedByHand)
