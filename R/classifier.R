@@ -40,15 +40,7 @@ isOnlyMainFiber <- function(block, fiberId) {
   return(anyDuplicated(regulatorIds) == 0)
 }
 
-isFiberSendingToRegulators <- function(prefix, id, block) {
-  edgesFileName <- paste(prefix, "buildingBlocks/", id, "_edges.csv", sep = "")
-  edges <- read.csv(edgesFileName, stringsAsFactors = F)
-  
-  for(i in 1:nrow(edges)) {
-    edges$SourceType[i] <- block[grep(paste("^", edges$Source[i], "$", sep = ""), block$Node), "NodeType"]
-    edges$TargetType[i] <- block[grep(paste("^", edges$Target[i], "$", sep = ""), block$Node), "NodeType"]
-  }
-  
+isFiberSendingToRegulators <- function(edges) {
   feedback <- edges %>%
     filter(SourceType == "Fiber") %>%
     filter(TargetType == "Regulator")
@@ -59,10 +51,19 @@ areAllNodesFromBlockInFiber <- function(block) {
   return(nrow(block[block$NodeType == "Regulator", ]) == 0)
 }
 
+isSizeOfInputSetOne <- function(block, edges) {
+  fiberNode <- block %>%
+    filter(NodeType == "Fiber") %>%
+    select(Node) %>%
+    summarise(Node = first(Node))
+  fiberNode <- as.character(fiberNode)
+  return(length(edges[edges$Target == fiberNode, "Source"]) == 1)
+}
+
 start.time <- Sys.time()
 # starting work with unique block
 for(id in 0:max(tidyBlocks$Id)) {
-  #id <- 14
+  id <- 36
   # first gather data about the block
   block <- tidyBlocks %>%
     filter(Id == id) %>%
@@ -80,15 +81,27 @@ for(id in 0:max(tidyBlocks$Id)) {
   block[block$NodeType == fiberId, "NodeType"] <- "Fiber"
   block[block$NodeType != "Fiber", "NodeType"] <- "Regulator"
   
+  edgesFileName <- paste(prefix, "buildingBlocks/", id, "_edges.csv", sep = "")
+  edges <- read.csv(edgesFileName, stringsAsFactors = F)
+  
+  for(i in 1:nrow(edges)) {
+    edges$SourceType[i] <- block[grep(paste("^", edges$Source[i], "$", sep = ""), block$Node), "NodeType"]
+    edges$TargetType[i] <- block[grep(paste("^", edges$Target[i], "$", sep = ""), block$Node), "NodeType"]
+  }
+  
   # this big structure of ifs is hard to understand, but it is drawn in block diagram in file blockdiagram.xml
   if(!isOnlyMainFiber(block, fiberId)) {
     blocks$Class[id + 1] <- "Multi-layered fiber"
   } else {
-    if(isFiberSendingToRegulators(prefix, id, block)) {
+    if(isFiberSendingToRegulators(edges)) {
       blocks$Class[id + 1] <- "Feedback fibration"
     } else {
       if(areAllNodesFromBlockInFiber(block)) {
-        blocks$Class[id + 1] <- "All nodes in fiber"
+        if(isSizeOfInputSetOne(block, edges)) {
+          blocks$Class[id + 1] <- "Star or chain"
+        } else {
+          blocks$Class[id + 1] <- "n > 1"
+        }
       } else {
         blocks$Class[id + 1] <- "Unclassified"
       }
@@ -99,5 +112,11 @@ now.time <- Sys.time()
 time.taken <- now.time - start.time
 print(time.taken)
 
+edges
+# for next function
+inputNodes <- edges %>%
+  filter(Target == block$Node[i]) %>%
+  select(Source)
 # result analysis
 classifiedByHand <- read.csv("human_HINT_classification.csv", stringsAsFactors = F)
+classifiedByHand <- cbind(blocks, classifiedByHand)
