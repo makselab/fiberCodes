@@ -60,10 +60,39 @@ isSizeOfInputSetOne <- function(block, edges) {
   return(length(edges[edges$Target == fiberNode, "Source"]) == 1)
 }
 
+doFibersSendToFibers <- function(edges){
+  fiberFiberInteractions <- edges %>%
+    filter(SourceType == "Fiber") %>%
+    filter(TargetType == "Fiber")
+  return(nrow(fiberFiberInteractions) > 0)
+}
+
+fiberHasOneInput <- function(edges) {
+  NumberOfInputs <- edges %>%
+    filter(TargetType == "Fiber") %>%
+    group_by(Target) %>%
+    summarise(NumberOfInputs = n()) %>%
+    ungroup() %>%
+    summarise(NumberOfInputs = first(NumberOfInputs))
+  return(NumberOfInputs$NumberOfInputs[1] == 1)
+}
+
+isOneNodeFromFiberRegulator <- function(edges) {
+  numberOfFiberInputs <- edges %>%
+    filter(SourceType == "Fiber") %>%
+    filter(TargetType == "Fiber") %>%
+    group_by(Target) %>%
+    summarise(NumberOfInputs = n()) %>%
+    ungroup() %>%
+    summarise(NumberOfInputs = first(NumberOfInputs))
+  
+  return(numberOfFiberInputs$NumberOfInputs == 1)
+}
+
 start.time <- Sys.time()
 # starting work with unique block
 for(id in 0:max(tidyBlocks$Id)) {
-  id <- 36
+  #id <- 270
   # first gather data about the block
   block <- tidyBlocks %>%
     filter(Id == id) %>%
@@ -103,7 +132,19 @@ for(id in 0:max(tidyBlocks$Id)) {
           blocks$Class[id + 1] <- "n > 1"
         }
       } else {
-        blocks$Class[id + 1] <- "Unclassified"
+        if(doFibersSendToFibers(edges)) {
+          if(isOneNodeFromFiberRegulator(edges)) {
+            blocks$Class[id + 1] <- "FFF"
+          } else {
+            blocks$Class[id + 1] <- "Unclassified"
+          }
+        } else {
+          if(fiberHasOneInput(edges)) {
+            blocks$Class[id + 1] <- "Unsynchronized star"
+          } else {
+            blocks$Class[id + 1] <- "FAN"
+          }
+        }
       }
     }
   }
@@ -120,3 +161,6 @@ inputNodes <- edges %>%
 # result analysis
 classifiedByHand <- read.csv("human_HINT_classification.csv", stringsAsFactors = F)
 classifiedByHand <- cbind(blocks, classifiedByHand)
+classifiedByHand <- classifiedByHand[, -4]
+diff <- classifiedByHand %>%
+  filter(Class != Name)
