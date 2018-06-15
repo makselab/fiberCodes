@@ -1,3 +1,9 @@
+"""
+Created on Fri Jun 15 5:48:00 PM 2018
+
+@author: Ian Leifer
+"""
+
 library(tidyr)
 library(dplyr)
 

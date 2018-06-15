@@ -33,7 +33,7 @@ main <- function() {
   writeComment("Running fibration finding code...", start.time)
   # TODO: make the key to recompile the code or not
   # TODO: properly check if code returned 1
-  #system("g++ -std=c++11 main.cpp processor.cpp node.cpp blocks.cpp -o exec")
+  system("g++ -std=c++11 main.cpp processor.cpp node.cpp blocks.cpp -o exec")
   system("./exec")
 
   writeComment("Reading fibration code output...", start.time)
