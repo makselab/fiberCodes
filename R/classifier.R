@@ -13,7 +13,7 @@ colnames(fibers)[1] <- "Id"
 colnames(fibers)[2] <- "Node"
 fibers$Id <- as.integer(fibers$Id)
 
-maxFiberSize <- 70
+maxFiberSize <- 300
 tidyFibers <- fibers %>%
   separate(Node, paste("V", c(1:maxFiberSize), sep = ""), sep = ", ") %>%
   gather(key = key, value = Node, -Id) %>%
@@ -27,7 +27,7 @@ colnames(blocks)[1] <- "Id"
 colnames(blocks)[2] <- "Node"
 blocks$Id <- as.integer(blocks$Id)
 
-maxBlockSize <- 71
+maxBlockSize <- 300
 tidyBlocks <- blocks %>%
   separate(Node, paste("V", c(1:maxBlockSize), sep = ""), sep = ", ") %>%
   gather(key = key, value = Node, -Id) %>%
@@ -85,7 +85,7 @@ isOneNodeFromFiberRegulator <- function(edges) {
     summarise(NumberOfInputs = n()) %>%
     ungroup() %>%
     summarise(NumberOfInputs = first(NumberOfInputs))
-  
+
   return(numberOfFiberInputs$NumberOfInputs == 1)
 }
 
@@ -95,22 +95,22 @@ chainCondition <- function(block, edges) {
     numberOfOutputs <- edges %>%
       filter(Source == block$Node[i]) %>%
       summarise(NumberOfOutputs = n())
-    
+
     numberOfInputs <- edges %>%
       filter(Target == block$Node[i]) %>%
       summarise(NumberOfInputs = n())
-    
+
     block$NumberOfOutputs[i] <- numberOfOutputs$NumberOfOutputs[1]
     block$NumberOfInputs[i] <- numberOfInputs$NumberOfInputs[1]
   }
   loopbackNode <- edges %>%
     filter(Source == Target)
   loopbackNode <- loopbackNode$Source[1]
-  
+
   loopTwoOutputs <- block[block$Node == loopbackNode, "NumberOfOutputs"] == 2
   oneNoOutputNode <- nrow(block[block$NumberOfOutputs == 0, ]) == 1
   otherNodesOneOne <- (nrow(block[(block$NumberOfOutputs != 0) & (block$NumberOfOutputs != 2), ]) == nrow(block) - 2)
-  
+
   return(loopTwoOutputs & oneNoOutputNode & otherNodesOneOne)
 }
 
@@ -125,7 +125,7 @@ start.time <- Sys.time()
 # starting work with unique block
 for(id in 0:max(tidyBlocks$Id)) {
   #print(id)
-  #id <- 0
+  #id <- 3
   # first gather data about the block
   block <- tidyBlocks %>%
     filter(Id == id) %>%
@@ -137,53 +137,70 @@ for(id in 0:max(tidyBlocks$Id)) {
   # here we know, that the first line of block is the node, which belongs to main fiber, because that is how we form it using stack in building blocks section of C code
   # if that part of C code is changed, this part needs to be rewritten
   fiberId <- tidyFibers$Id[grep(paste("^", block$Node[1], "$", sep = ""), tidyFibers$Node)]
-  
+
   block <- block %>%
     mutate(NodeType = FiberId)
   block[block$NodeType == fiberId, "NodeType"] <- "Fiber"
   block[block$NodeType != "Fiber", "NodeType"] <- "Regulator"
-  
+
   edgesFileName <- paste(prefix, "buildingBlocks/", id, "_edges.csv", sep = "")
   edges <- read.csv(edgesFileName, stringsAsFactors = F)
-  
+
   for(i in 1:nrow(edges)) {
     edges$SourceType[i] <- block[grep(paste("^", edges$Source[i], "$", sep = ""), block$Node), "NodeType"]
     edges$TargetType[i] <- block[grep(paste("^", edges$Target[i], "$", sep = ""), block$Node), "NodeType"]
   }
-  
+
   # this big structure of ifs is hard to understand, but it is drawn in block diagram in file blockdiagram.xml
   if(isFiberSendingToRegulators(edges)) {
-    blocks$Class[id + 1] <- "Feedback fibration"
+    blocks$Class[id + 1] <- "Feedback Fiber"
+    blocks$BlockName[id + 1] <- "Feedback Fiber"
   } else {
     if(!isOnlyMainFiber(block, fiberId)) {
-      blocks$Class[id + 1] <- "Multi-layered fiber"
+      blocks$Class[id + 1] <- "Multi-layered Fiber"
+      blocks$BlockName[id + 1] <- "Multi-layered Fiber"
     } else {
       if(areAllNodesFromBlockInFiber(block)) {
         if(isSizeOfInputSetOne(block, edges)) {
           if(chainCondition(block, edges)) {
             blocks$Class[id + 1] <- "Chain"
+            K <- nrow(block)
+            blocks$BlockName[id + 1] <- paste(K, "Chain", sep = "-")
           } else {
             if(allSameInput(edges)) {
-              blocks$Class[id + 1] <- "Synchronized star"
+              blocks$Class[id + 1] <- "Synchronized Star Fiber"
+              K <- nrow(block) - 1
+              blocks$BlockName[id + 1] <- paste(K, "SSF", sep = "-")
             } else {
               blocks$Class[id + 1] <- "Chain-Star"
+              blocks$BlockName[id + 1] <- "Chain-Star"
             }
           }
         } else {
           blocks$Class[id + 1] <- "n > 1"
+          blocks$BlockName[id + 1] <- "n > 1"
         }
       } else {
         if(doFibersSendToFibers(edges)) {
           if(isOneNodeFromFiberRegulator(edges)) {
+            L <- nrow(block[block$NodeType == "Regulator", ])
+            K <- nrow(block[block$NodeType == "Fiber", ])
             blocks$Class[id + 1] <- "FFF"
+            blocks$BlockName[id + 1] <- paste(L, K, "FFF", sep = "-")
           } else {
             blocks$Class[id + 1] <- "Unclassified"
+            blocks$BlockName[id + 1] <- "Unclassified"
           }
         } else {
           if(fiberHasOneInput(edges)) {
-            blocks$Class[id + 1] <- "Unsynchronized star"
+            blocks$Class[id + 1] <- "Unsynchronized Star Fiber"
+            K <- nrow(block) - 1
+            blocks$BlockName[id + 1] <- paste(K, "USF", sep = "-")
           } else {
-            blocks$Class[id + 1] <- "FAN"
+            L <- nrow(block[block$NodeType == "Regulator", ])
+            K <- nrow(block[block$NodeType == "Fiber", ])
+            blocks$Class[id + 1] <- "FAN Fiber"
+            blocks$BlockName[id + 1] <- paste(L, K, "FAN", sep = "-")
           }
         }
       }
@@ -193,6 +210,8 @@ for(id in 0:max(tidyBlocks$Id)) {
 now.time <- Sys.time()
 time.taken <- now.time - start.time
 print(time.taken)
+
+blocks <- arrange(blocks, Class, BlockName)
 
 # result analysis
 classifiedByHand <- read.csv("human_HINT_classification.csv", stringsAsFactors = F)
