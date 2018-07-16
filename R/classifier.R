@@ -2,7 +2,7 @@ library(tidyr)
 library(dplyr)
 
 setwd("~/Desktop/groupoid_finding_codes/Rruns/output/")
-prefix <- "human_HINT_all_curated"
+prefix <- "ourOperonNetwork"
 # read fibers and building blocks
 fiberFile <- paste(prefix, ".txt", sep = "")
 blocksFile <- paste(prefix, "_blocks.txt", sep = "")
@@ -125,7 +125,7 @@ start.time <- Sys.time()
 # starting work with unique block
 for(id in 0:max(tidyBlocks$Id)) {
   #print(id)
-  #id <- 3
+  #id <- 2
   # first gather data about the block
   block <- tidyBlocks %>%
     filter(Id == id) %>%
@@ -143,6 +143,9 @@ for(id in 0:max(tidyBlocks$Id)) {
   block[block$NodeType == fiberId, "NodeType"] <- "Fiber"
   block[block$NodeType != "Fiber", "NodeType"] <- "Regulator"
 
+  blocks$Fiber[id + 1] <- paste(sort(block[block$NodeType == "Fiber", "Node"]), collapse = ", ")
+  blocks$Regulators[id + 1] <- paste(sort(block[block$NodeType == "Regulator", "Node"]), collapse = ", ")
+
   edgesFileName <- paste(prefix, "buildingBlocks/", id, "_edges.csv", sep = "")
   edges <- read.csv(edgesFileName, stringsAsFactors = F)
 
@@ -155,10 +158,12 @@ for(id in 0:max(tidyBlocks$Id)) {
   if(isFiberSendingToRegulators(edges)) {
     blocks$Class[id + 1] <- "Feedback Fiber"
     blocks$BlockName[id + 1] <- "Feedback Fiber"
+    blocks$nl[id + 1] <- "Not n-l classifiable"
   } else {
     if(!isOnlyMainFiber(block, fiberId)) {
       blocks$Class[id + 1] <- "Multi-layered Fiber"
       blocks$BlockName[id + 1] <- "Multi-layered Fiber"
+      blocks$nl[id + 1] <- "Not n-l classifiable"
     } else {
       if(areAllNodesFromBlockInFiber(block)) {
         if(isSizeOfInputSetOne(block, edges)) {
@@ -166,19 +171,23 @@ for(id in 0:max(tidyBlocks$Id)) {
             blocks$Class[id + 1] <- "Chain"
             K <- nrow(block)
             blocks$BlockName[id + 1] <- paste(K, "Chain", sep = "-")
+            blocks$nl[id + 1] <- "n = 1, l = 0"
           } else {
             if(allSameInput(edges)) {
               blocks$Class[id + 1] <- "Synchronized Star Fiber"
               K <- nrow(block) - 1
               blocks$BlockName[id + 1] <- paste(K, "SSF", sep = "-")
+              blocks$nl[id + 1] <- "n = 1, l = 0"
             } else {
               blocks$Class[id + 1] <- "Chain-Star"
               blocks$BlockName[id + 1] <- "Chain-Star"
+              blocks$nl[id + 1] <- "n = 1, l = 0"
             }
           }
         } else {
           blocks$Class[id + 1] <- "n > 1"
           blocks$BlockName[id + 1] <- "n > 1"
+          blocks$nl[id + 1] <- "n > 1"
         }
       } else {
         if(doFibersSendToFibers(edges)) {
@@ -187,20 +196,24 @@ for(id in 0:max(tidyBlocks$Id)) {
             K <- nrow(block[block$NodeType == "Fiber", ])
             blocks$Class[id + 1] <- "FFF"
             blocks$BlockName[id + 1] <- paste(L, K, "FFF", sep = "-")
+            blocks$nl[id + 1] <- paste("n = 1, l = ", L, sep = "")
           } else {
             blocks$Class[id + 1] <- "Unclassified"
             blocks$BlockName[id + 1] <- "Unclassified"
+            blocks$nl[id + 1] <- "Unclassified"
           }
         } else {
           if(fiberHasOneInput(edges)) {
             blocks$Class[id + 1] <- "Unsynchronized Star Fiber"
             K <- nrow(block) - 1
             blocks$BlockName[id + 1] <- paste(K, "USF", sep = "-")
+            blocks$nl[id + 1] <- "n = 0, l = 1"
           } else {
             L <- nrow(block[block$NodeType == "Regulator", ])
             K <- nrow(block[block$NodeType == "Fiber", ])
             blocks$Class[id + 1] <- "FAN Fiber"
             blocks$BlockName[id + 1] <- paste(L, K, "FAN", sep = "-")
+            blocks$nl[id + 1] <- paste("n = 0, l = ", L, sep = "")
           }
         }
       }
@@ -211,7 +224,75 @@ now.time <- Sys.time()
 time.taken <- now.time - start.time
 print(time.taken)
 
-blocks <- arrange(blocks, Class, BlockName)
+#blocks <- arrange(blocks, Class, BlockName)
+
+paperBlocks <- arrange(blocks, Class, BlockName)
+paperBlocks %>%
+  group_by(Class) %>%
+  summarise(numberOfBlocks = n())
+
+FANNM <- paperBlocks %>%
+  filter(Class == "FAN Fiber") %>%
+  select(-2, -3) %>%
+  mutate(N = BlockName) %>%
+  mutate(M = BlockName)
+FANNM$N <- as.integer(gsub("([0-9]+)-[0-9-]+FAN", "\\1", FANNM$N))
+FANNM$M <- as.integer(gsub("[0-9]+-([0-9]+)-FAN", "\\1", FANNM$M))
+FANNM <- FANNM %>%
+  filter(M < 20)
+
+library(ggplot2)
+ggplot(data = FANNM) +
+  geom_histogram(mapping = aes(x = N), binwidth = 1, color = "white", fill = "blue")
+
+ggplot(data = FANNM[]) +
+  geom_histogram(mapping = aes(x = M), binwidth = 1, color = "white", fill = "blue")
+
+FFFNM <- paperBlocks %>%
+  filter(Class == "FFF") %>%
+  select(-2, -3) %>%
+  mutate(N = BlockName) %>%
+  mutate(M = BlockName)
+FFFNM$N <- as.integer(gsub("([0-9]+)-[0-9-]+FFF", "\\1", FFFNM$N))
+FFFNM$M <- as.integer(gsub("[0-9]+-([0-9]+)-FFF", "\\1", FFFNM$M))
+
+ggplot(data = FFFNM) +
+  geom_histogram(mapping = aes(x = N), binwidth = 1, color = "white", fill = "blue")
+
+ggplot(data = FFFNM) +
+  geom_histogram(mapping = aes(x = M), binwidth = 1, color = "white", fill = "blue")
+
+uSSFN <- paperBlocks %>%
+  filter(Class == "Unsynchronized Star Fiber") %>%
+  select(-2, -3) %>%
+  mutate(N = BlockName)
+uSSFN$N <- as.integer(gsub("([0-9]+)-USF", "\\1", uSSFN$N))
+uSSFN <- uSSFN %>%
+  filter(N < 35)
+
+ggplot(data = uSSFN) +
+  geom_histogram(mapping = aes(x = N), binwidth = 7, color = "white", fill = "blue")
+
+SSFN <- paperBlocks %>%
+  filter(Class == "Synchronized Star Fiber") %>%
+  select(-2, -3) %>%
+  mutate(N = BlockName)
+SSFN$N <- as.integer(gsub("([0-9]+)-SSF", "\\1", SSFN$N))
+
+ggplot(data = SSFN) +
+  geom_histogram(mapping = aes(x = N), binwidth = 6, color = "white", fill = "blue")
+
+blockDistribution <- read.csv("/home/ian/Dropbox/Research/PhD work/shared folders/LARGE-SCALE-GROUPOIDS/Human_yeast_paper/block distribution.csv", stringsAsFactors = F)
+
+blockDistribution <- blockDistribution %>%
+  gather("Dataset", "value", -1)
+
+blockDistribution <- blockDistribution %>%
+  group_by(Dataset) %>%
+  mutate(value = value / sum(value) * 100)
+
+ggplot(data = blockDistribution) +
+  geom_col(mapping = aes(x = Structure.type, y = value, fill = Dataset), pos = "dodge")
 
 # result analysis
 classifiedByHand <- read.csv("human_HINT_classification.csv", stringsAsFactors = F)
