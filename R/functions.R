@@ -1,9 +1,3 @@
-"""
-Created on Fri Jun 15 5:48:00 PM 2018
-
-@author: Ian Leifer
-"""
-
 library(tidyr)
 library(dplyr)
 
@@ -47,6 +41,9 @@ readNetworkFile <- function(configuration) {
   if(configuration$Weighted == "1") {
     colnames(network)[3] <- "Weight"
   }
+  network <- network %>%
+    filter(Source != "NA") %>%
+    filter(Target != "NA")
   return(network)
 }
 
@@ -87,10 +84,6 @@ getNodeLabelById <- function(id, nodeMap) {
 
 getWeightIdByName <- function(weightName, weightMap) {
   return(weightMap[grep(paste("^", weightName, "$", sep = ""), weightMap$Name), 2])
-}
-
-isNodeInBlockByLabel <- function(label, block) {
-  return(grepl(paste("(^| )", label, "($|,)", sep = ""), block))
 }
 
 getTransformedConnectivity <- function(configuration, network, nodeMap, weightMap) {
@@ -134,9 +127,8 @@ getFibersFromCodeOutput <- function(nodeMap, fileNames) {
   fibers <- read.delim(fileNames$FiberFile, header = F, sep = "\t")
   colnames(fibers)[1] <- "Id"
   colnames(fibers)[2] <- "FiberId"
-  for(i in 1:nrow(nodeMap)) {
-    nodeMap$FiberId[i] <- fibers[grep(paste("^", nodeMap$Id[i], "$", sep = ""), fibers$Id), "FiberId"]
-  }
+
+  nodeMap$FiberId <- fibers$FiberId[nodeMap$Id + 1]
   nodeMap <- nodeMap[, c(2, 1, 3)]
   return(nodeMap)
 }
@@ -165,9 +157,8 @@ getBuildingBlocksFromCodeOutput <- function(nodeMap, fileNames) {
   for(i in 1:nrow(buildingBlocks)) {
     block <- data.frame(strsplit(buildingBlocks$Nodes[i], ", "), stringsAsFactors = F)
     colnames(block)[1] <- "NodeId"
-    for(j in 1:nrow(block)) {
-      block$NodeName[j] <- getNodeLabelById(block$NodeId[j], nodeMap)
-    }
+    block$NodeName <- nodeMap[as.integer(block$NodeId) + 1, 2]
+
     block <- block %>%
       select(2) %>%
       summarise(Nodes = paste(NodeName, collapse = ", "))
@@ -225,11 +216,9 @@ writeBuldingBlocksToFiles <- function(configuration, buildingBlocks, nodeMap, cs
     # get edges data
     columnNames <- colnames(csvNetwork)
     blockConnections <- data.frame(matrix(vector(), nrow = 0, ncol = length(columnNames), dimnames = list(c(), columnNames)), stringsAsFactors = F)
-    for(j in 1:nrow(csvNetwork)) {
-      if((isNodeInBlockByLabel(csvNetwork$Source[j], buildingBlocks$Nodes[i]) == 1) && (isNodeInBlockByLabel(csvNetwork$Target[j], buildingBlocks$Nodes[i]) == 1)) {
-        blockConnections <- rbind(blockConnections, csvNetwork[j, ])
-      }
-    }
+    bbNodes <- as.data.frame(strsplit(buildingBlocks$Nodes[i], ", "), stringsAsFactors = F)
+    blockConnections <- csvNetwork[csvNetwork$Source %in% bbNodes[, 1] & csvNetwork$Target %in% bbNodes[, 1], ]
+
     # write to edges file
     fileName <- paste(configuration$OutputPath, "/", buildingBlocks$Id[i], "_edges.csv", sep = "")
     write.csv(blockConnections, file = fileName, quote = F, row.names = F)
