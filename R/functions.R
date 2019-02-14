@@ -57,7 +57,7 @@ createNodeMap <- function(network) {
   uniqueNodes <- data.frame(unique(uniqueNodes), stringsAsFactors = F)
   nodeMap <- uniqueNodes %>%
     arrange(Label) %>%
-    mutate(Id = row_number(Label) - 1)
+    mutate(Id = row_number() - 1)
   return(nodeMap)
 }
 
@@ -158,7 +158,6 @@ getBuildingBlocksFromCodeOutput <- function(nodeMap, fileNames) {
     block <- data.frame(strsplit(buildingBlocks$Nodes[i], ", "), stringsAsFactors = F)
     colnames(block)[1] <- "NodeId"
     block$NodeName <- nodeMap[as.integer(block$NodeId) + 1, 2]
-
     block <- block %>%
       select(2) %>%
       summarise(Nodes = paste(NodeName, collapse = ", "))
