@@ -1,9 +1,6 @@
 library(tidyr)
 library(dplyr)
 
-setwd("/home/ian/Desktop/groupoid_finding_codes/fibers/R")
-source("functions.R")
-
 writeComment <- function(text, start.time) {
   print(text)
   now.time <- Sys.time()
@@ -12,6 +9,9 @@ writeComment <- function(text, start.time) {
 }
 
 main <- function() {
+  currentDirectory <- getwd()
+  setwd("~/Dropbox/groupoid_finding_codes/fibers/R")
+  source("functions.R")
   start.time <- Sys.time()
   writeComment("Reading configuration...", start.time)
   fileNames <- getFileNames()
@@ -45,6 +45,8 @@ main <- function() {
   writeComment("Printing output to output files...", start.time)
   writeOutputToFiles(configuration, fibers, buildingBlocks, nodeMap, network, fileNames)
   writeComment("Done", start.time)
+  setwd(currentDirectory)
 }
 
-main()
+#main()
+
