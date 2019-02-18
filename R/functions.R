@@ -33,7 +33,7 @@ readNetworkFile <- function(configuration) {
     numberOfColumns <- 2
   }
 
-  rawInput <- read.delim(configuration$InputFile, header = F, sep = "\n")
+  rawInput <- read.delim(configuration$InputFile, header = F, sep = "\n", quote = "")
   network <- rawInput %>%
     separate(1, paste(c(1:numberOfColumns), sep = ", "), sep = "[ \t]")
   colnames(network)[1] <- "Source"
@@ -41,9 +41,6 @@ readNetworkFile <- function(configuration) {
   if(configuration$Weighted == "1") {
     colnames(network)[3] <- "Weight"
   }
-  network <- network %>%
-    filter(Source != "NA") %>%
-    filter(Target != "NA")
   return(network)
 }
 
