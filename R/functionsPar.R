@@ -1,30 +1,6 @@
 library(tidyr)
 library(dplyr)
 
-getFileNames <- function() {
-  fileNames <- read.delim("fileNames.txt", header = F)
-  fileNames <- fileNames %>%
-    separate(1, c("Type", "Path"), sep = ":[ \t]")
-  fileNames$Type <- gsub(" ", "", fileNames$Type)
-  fileNames <- data.frame(t(fileNames), stringsAsFactors = F)
-  colnames(fileNames) <- fileNames[1, ]
-  fileNames <- fileNames[-1, ]
-  rownames(fileNames) <- c()
-  return(fileNames)
-}
-
-readConfigurationFile <- function() {
-  configuration <- read.delim(file = "fiberConfig.txt", header = F, stringsAsFactors = F)
-  configuration <- configuration %>%
-    separate(1, c("Parameter", "Value"), sep = ":[ \t]")
-  configuration$Parameter <- gsub(" ", "", configuration$Parameter)
-  configuration <- data.frame(t(configuration), stringsAsFactors = F)
-  colnames(configuration) <- configuration[1, ]
-  configuration <- configuration[-1, ]
-  rownames(configuration) <- c()
-  return(configuration)
-}
-
 # TODO: treat csv and not csv case properly
 readNetworkFile <- function(configuration) {
   if(configuration$Weighted == "1") {
@@ -86,12 +62,12 @@ getWeightIdByName <- function(weightName, weightMap) {
 getTransformedConnectivity <- function(configuration, network, nodeMap, weightMap) {
   connectivity <- network
   for(i in 1:nrow(connectivity)) {
+    if(i %% 10000 == 1) {print(paste("Transformed ", i, "/", nrow(connectivity), " lines", sep = ""))}
     connectivity[i, 1] <- getNodeIdByLabel(connectivity[i, 1], nodeMap)
     connectivity[i, 2] <- getNodeIdByLabel(connectivity[i, 2], nodeMap)
     if(configuration$Weighted == "1") {
       connectivity[i, 3] <- getWeightIdByName(connectivity[i, 3], weightMap)
     }
-    if((i %% 10000) == 0) {print(paste("Transformed ", i, "/", nrow(connectivity), " connectivity lines", sep = ""))}
   }
   return(connectivity)
 }
@@ -197,7 +173,6 @@ writeBuldingBlocksToFiles <- function(configuration, buildingBlocks, nodeMap, cs
   system(paste("mkdir ", configuration$OutputPath, sep = ""))
 
   for(i in 1:nrow(buildingBlocks)) {
-    if(i %% 10 == 1) {print(paste("Writing ", i, "/", nrow(buildingBlocks), "th building block", sep = ""))}
     # get nodes data
     block <- data.frame(strsplit(buildingBlocks$Nodes[i], ", "), stringsAsFactors = F)
     colnames(block)[1] <- "Id"

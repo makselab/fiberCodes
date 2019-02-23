@@ -1,51 +1,43 @@
 library(tidyr)
 library(dplyr)
+source("~/Dropbox/groupoid_finding_codes/fibers/R/functionsPar.R")
 
-writeComment <- function(text, start.time) {
-  print(text)
-  now.time <- Sys.time()
-  time.taken <- now.time - start.time
-  print(time.taken)
-}
-
-main <- function() {
+runFiberCode <- function(fileNames, configuration, parId) {
   currentDirectory <- getwd()
   setwd("~/Dropbox/groupoid_finding_codes/fibers/R")
-  source("functions.R")
-  start.time <- Sys.time()
-  writeComment("Reading configuration...", start.time)
-  fileNames <- getFileNames()
-  configuration <- readConfigurationFile()
-  writeComment("Reading network...", start.time)
   network <- readNetworkFile(configuration)
 
-  writeComment("Creating network maps...", start.time)
   nodeMap <- createNodeMap(network)
   if(configuration$Weighted == "1") {
     weightMap <- createWeightMap(network)
+  } else {
+    weightMap <- NULL
   }
 
-  writeComment("Transforming connectivity...", start.time)
   connectivity <- getTransformedConnectivity(configuration, network, nodeMap, weightMap)
   writeToAdjacencyFile(configuration, nodeMap, weightMap, connectivity, fileNames)
 
   codePreactions(fileNames)
-  writeComment("Running fibration finding code...", start.time)
   # TODO: make the key to recompile the code or not
   # TODO: properly check if code returned 1
-  system("g++ -std=c++11 main.cpp processor.cpp node.cpp blocks.cpp -o exec")
-  system("./exec")
+  system(paste("g++ -std=c++11 main.cpp processor.cpp node.cpp blocks.cpp -o exec", parId, sep = ""))
+  system(paste("./exec", parId, " ", parId, sep = ""))
+  system(paste("rm exec", parId, sep = ""))
 
-  writeComment("Reading fibration code output...", start.time)
   nodeMap <- getFibersFromCodeOutput(nodeMap, fileNames)
   fibers <- prepareFibersOutput(nodeMap)
   if(configuration$BuildingBlocks == "1") {
     buildingBlocks <- getBuildingBlocksFromCodeOutput(nodeMap, fileNames)
   }
-  writeComment("Printing output to output files...", start.time)
   writeOutputToFiles(configuration, fibers, buildingBlocks, nodeMap, network, fileNames)
-  writeComment("Done", start.time)
   setwd(currentDirectory)
+}
+
+main <- function() {
+  fileNames <- getFileNames()
+  configuration <- readConfigurationFile()
+
+  runFiberCode(fileNames, configuration)
 }
 
 #main()

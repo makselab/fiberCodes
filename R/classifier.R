@@ -107,7 +107,8 @@ getBlocks <- function(prefix) {
     arrange(Id) %>%
     select(c(1, 3))
 
-  blocks <- read.table(blocksFile, sep = "\t", stringsAsFactors = F)
+  blocks <- tryCatch(read.table(blocksFile, sep = "\t", stringsAsFactors = F), error=function(e) NULL)
+  if(is.null(blocks)) {return(NULL)}
   blocks$V1 <- gsub(":", "", blocks$V1)
   colnames(blocks)[1] <- "Id"
   colnames(blocks)[2] <- "Node"
@@ -124,6 +125,13 @@ getBlocks <- function(prefix) {
 
   # starting work with unique block
   for(id in 0:max(tidyBlocks$Id)) {
+    if(as.integer(max(tidyBlocks$Id) / 10) != 0) {
+      if(id %% as.integer(max(tidyBlocks$Id) / 10) == 1) {
+        print(paste("Classifing ", id, "/", max(tidyBlocks$Id), " blocks", sep = ""))
+      }
+    } else {
+      print(paste("Classifing ", id, "/", max(tidyBlocks$Id), " blocks", sep = ""))
+    }
     # first gather data about the block
     block <- tidyBlocks %>%
       filter(Id == id) %>%
