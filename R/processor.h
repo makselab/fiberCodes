@@ -1,18 +1,19 @@
 #ifndef PROCESSOR_H
 #define PROCESSOR_H
 #include <vector>
+#include <string>
 #include "node.h"
 #include "blocks.h"
 using namespace std;
 
-#define inputFile "adjacency.txt"
+//#define inputFile "adjacency.txt"
 
 class Processor {
 private:
-	Processor();
+	Processor(int parallelId);
 	static Processor *p_Processor;
 public:
-	static Processor* getProcessor();
+	static Processor* getProcessor(int parallelId);
 private:
 	int numberOfNodes;
 	vector<Node> nodes;
@@ -22,6 +23,10 @@ private:
 	bool weighted;
 	int numberOfWeights;
 	void readConfigFile();
+    string inputFileName;
+    string fiberFileName;
+    string blocksFileName;
+    void createFileNames(int parId);
 private:
 	// create 2D vector array to store all connections
 	vector< vector<int> > connections;

@@ -1,6 +1,7 @@
 #ifndef BUILDINGBLOCK_H
 #define BUILDINGBLOCK_H
 #include <vector>
+#include <string>
 using namespace std;
 
 class BuildingBlock {
@@ -12,7 +13,7 @@ public:
 	BuildingBlock(int iD) {id = iD; colors.resize(1, 0);};
 	bool addNode(int id, int color = -1);
 	bool isAddableColor(int color);
-	void print();
+	void print(string filename);
 	int getNumberOfNodes() {return nodes.size();}
 };
 

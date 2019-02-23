@@ -27,9 +27,9 @@ bool BuildingBlock::isAddableColor(int color) {
 	}
 }
 
-void BuildingBlock::print() {
+void BuildingBlock::print(string filename) {
 	ofstream buildingBlockFile;
-	buildingBlockFile.open("buildingBlocks.txt", ofstream::out | ofstream::app);
+	buildingBlockFile.open(filename, ofstream::out | ofstream::app);
 	/*for(int i = 0; i < groupoidIds.size(); i++) {
 		fiberFile << i << "\t" << groupoidIds[i] << endl;
 	}*/

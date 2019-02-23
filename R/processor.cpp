@@ -7,14 +7,15 @@
 
 Processor* Processor::p_Processor = 0;
 
-Processor* Processor::getProcessor() {
+Processor* Processor::getProcessor(int parallelId) {
 	if(!p_Processor) {
-		p_Processor = new Processor();
+		p_Processor = new Processor(parallelId);
 	}
 	return p_Processor;
 }
 
-Processor::Processor() {
+Processor::Processor(int parallelId) {
+    createFileNames(parallelId);
 	readConfigFile();
 
 	connections.resize(numberOfConnections);
@@ -111,8 +112,20 @@ void Processor::run() {
 	}
 	
 	for(int i = 0; i < blocks.size(); i++) {
-		blocks[i].print();
+		blocks[i].print(blocksFileName);
 	}
+}
+
+void Processor::createFileNames(int parId) {
+    if(parId != -1) {
+        inputFileName = "parallel/adjacency" + to_string(parId) + ".txt";
+        fiberFileName = "parallel/fibers" + to_string(parId) + ".txt";
+        blocksFileName = "parallel/buildingBlocks" + to_string(parId) + ".txt";
+    } else {
+        inputFileName = "adjacency.txt";
+        fiberFileName = "fibers.txt";
+        blocksFileName = "buildingBlocks.txt";
+    }
 }
 
 void Processor::prepareColors(vector<int> &nodeColors, int numberOfColors) {
@@ -148,7 +161,7 @@ the weights are numbers or names, but the person who creates input has to take c
 	string line;
 	ifstream config;
 
-	config.open(inputFile, ifstream::in);
+	config.open(inputFileName, ifstream::in);
 
 	getline(config, line, '\n');
 	numberOfNodes = stoi(line);
@@ -178,7 +191,7 @@ void Processor::readConnectionsFile() {
 	string line;
 	ifstream config;
 
-	config.open(inputFile, ifstream::in);
+	config.open(inputFileName, ifstream::in);
 
 	// skip 3 lines with config data
 	getline(config, line, '\n');
@@ -210,7 +223,7 @@ void Processor::readConnectionsFile() {
 
 void Processor::printGroupoids(vector<int> groupoidIds) {
 	ofstream fiberFile;
-	fiberFile.open("fibers.txt");
+	fiberFile.open(fiberFileName);
 	for(int i = 0; i < groupoidIds.size(); i++) {
 		fiberFile << i << "\t" << groupoidIds[i] << endl;
 	}
