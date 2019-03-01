@@ -327,7 +327,7 @@ int Processor::findGroupoids(int numberOfNodes, vector< vector<int> > groupoidCo
 		Either it can be done as a 3D array and then we will need two realisations for weighted and non-weighted design.
 		Or vectors themselves can be formed in a bit weird way, but we will classify nodes comparing vectors not worrying about their structure.
 		It improves readability and simpliness only paying with the strange enumeration of array */
-		vector< vector<unsigned short> > vectors(numberOfNodes);
+		vector< vector<int> > vectors(numberOfNodes);
 		for(int i = 0; i < numberOfNodes; i++) {
 			vectors[i].resize(numberOfColors * (weighted?numberOfWeights:1));
 		}
