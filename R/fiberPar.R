@@ -7,7 +7,7 @@ runFiberCode <- function(fileNames, configuration, parId) {
   setwd("~/Dropbox/groupoid_finding_codes/fibers/R")
   network <- readNetworkFile(configuration)
 
-  nodeMap <- createNodeMap(network)
+  nodeMap <- createNodeMap(network, configuration)
   if(configuration$Weighted == "1") {
     weightMap <- createWeightMap(network)
   } else {
@@ -37,7 +37,7 @@ main <- function() {
   fileNames <- getFileNames()
   configuration <- readConfigurationFile()
 
-  runFiberCode(fileNames, configuration)
+  runFiberCode(fileNames, configuration, 1)
 }
 
 #main()
