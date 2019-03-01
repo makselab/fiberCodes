@@ -140,9 +140,9 @@ getBuildingBlocksFromCodeOutput <- function(nodeMap, fileNames) {
 }
 
 writeOutputToFiles <- function(configuration, fibers, buildingBlocks, nodeMap, network, fileNames) {
-  configuration$BlocksOutputFile <- gsub(".txt", "_blocks.txt", configuration$OutputFile)
-  configuration$NodesOutputFile <- gsub(".txt", "_nodes.csv", configuration$OutputFile)
-  configuration$EdgesOutputFile <- gsub(".txt", "_edges.csv", configuration$OutputFile)
+  configuration$BlocksOutputFile <- gsub(".txt$", "_blocks.txt", configuration$OutputFile)
+  configuration$NodesOutputFile <- gsub(".txt$", "_nodes.csv", configuration$OutputFile)
+  configuration$EdgesOutputFile <- gsub(".txt$", "_edges.csv", configuration$OutputFile)
   write.table(fibers, file = configuration$OutputFile, quote = F, row.names = F, col.names = F, sep = ":\t")
   if(configuration$BuildingBlocks == "1") {
     write.table(buildingBlocks, file = configuration$BlocksOutputFile, quote = F, row.names = F, col.names = F, sep = ":\t")
