@@ -1,3 +1,5 @@
+# Author: Ian Leifer <ianleifer93@gmail.com>
+
 library(tidyr)
 library(dplyr)
 source("~/Dropbox/groupoid_finding_codes/fibers/R/functionsPar.R")
