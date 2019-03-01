@@ -92,7 +92,8 @@ getBlocks <- function(prefix) {
   fiberFile <- paste(prefix, ".txt", sep = "")
   blocksFile <- paste(prefix, "_blocks.txt", sep = "")
 
-  fibers <- read.table(fiberFile, sep = "\t", stringsAsFactors = F)
+  fibers <- tryCatch(read.table(fiberFile, sep = "\t", stringsAsFactors = F), error=function(e) NULL)
+  if(is.null(fibers)) {return(NULL)}
   fibers$V1 <- gsub(":", "", fibers$V1)
   colnames(fibers)[1] <- "Id"
   colnames(fibers)[2] <- "Node"
