@@ -165,12 +165,12 @@ getBlocks <- function(prefix) {
     if(isFiberSendingToRegulators(edges)) {
       blocks$Class[id + 1] <- "Feedback Fiber"
       blocks$BlockName[id + 1] <- "Feedback Fiber"
-      blocks$nl[id + 1] <- "Not n-l classifiable"
+      blocks$nl[id + 1] <- "Fibonacci"
     } else {
       if(!isOnlyMainFiber(block, fiberId)) {
         blocks$Class[id + 1] <- "Multi-layered Fiber"
         blocks$BlockName[id + 1] <- "Multi-layered Fiber"
-        blocks$nl[id + 1] <- "Not n-l classifiable"
+        blocks$nl[id + 1] <- "Multi-layered Fiber"
       } else {
         if(areAllNodesFromBlockInFiber(block)) {
           if(isSizeOfInputSetOne(block, edges)) {
