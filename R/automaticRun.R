@@ -47,9 +47,14 @@ fiberCodeFolder <- "~/Dropbox/groupoid_finding_codes/fibers/R"
 files <- list.files(folderToRun, pattern = ".txt")
 files <- files[checkDatasets(files, outputFolder)]
 
+# remove this and directed = 1 and uncomment below !!!!!
+#files = files[-length(files)]
+
 datasets <- read.csv(paste(outputFolder, "datasets.csv", sep = "/"), stringsAsFactors = F)
 datasets <- datasets[!is.na(datasets$Directed), ]
 files <- files[files %in% datasets$File.name]
+
+updateFiles <- F
 
 if(length(files) != 0) {
   myCluster <- makeCluster(detectCores() - 1, outfile = "")
@@ -90,20 +95,19 @@ if(length(files) != 0) {
       group_by(nodes) %>%
       summarise(n = n()) %>%
       filter(n > 1)
-    biggestSCC <- max(nodes$n)
-    if(biggestSCC < 1) {biggestSCC = 1}
+    nodesInSCC <- sum(nodes$n)
 
     runCode <- !file.exists(paste(outputFolder, "/", gsub(".txt","", files[f]), ".txt", sep = "")) & !notRun
     datasets <- read.csv(paste(outputFolder, "datasets.csv", sep = "/"), stringsAsFactors = F)
     directed <- datasets$Directed[grep(paste("^", files[f], "$", sep = ""), datasets$File.name)]
-    datasets[grep(paste("^", files[f], "$", sep = ""), datasets$File.name), ]
+    # directed = 1
     if(directed == 1) {
       buildingBlocksNeeded = 1
     } else {
       buildingBlocksNeeded = 0
     }
     setTxtProgressBar(pb, f/3)
-    c(numberOfNodes, numberOfEdges, weighted, numberOfSCC, biggestSCC, runCode, directed, buildingBlocksNeeded)
+    c(numberOfNodes, numberOfEdges, weighted, numberOfSCC, nodesInSCC, runCode, directed, buildingBlocksNeeded)
   }
 
   foreach(f = 1:length(files)) %dopar% {
@@ -163,7 +167,7 @@ if(length(files) != 0) {
     runSummary <- rbind(runSummary, c("Number of nodes", fileParameters[f, 1], gsub(".txt", "", files[f])))
     runSummary <- rbind(runSummary, c("Number of edges", fileParameters[f, 2], gsub(".txt", "", files[f])))
     runSummary <- rbind(runSummary, c("Number of SCC", fileParameters[f, 4], gsub(".txt", "", files[f])))
-    runSummary <- rbind(runSummary, c("Size of biggest SCC", fileParameters[f, 5], gsub(".txt", "", files[f])))
+    runSummary <- rbind(runSummary, c("Number of nodes in SCC", fileParameters[f, 5], gsub(".txt", "", files[f])))
     runSummary <- runSummary[!is.na(runSummary$nl), ]
     setTxtProgressBar(pb, length(files) * 2 / 3 + f/3)
     runSummary
@@ -175,7 +179,7 @@ if(length(files) != 0) {
   print(time.taken)
 
   # we are reading summary history here to make the table of all datasets
-  if(file.exists(paste(outputFolder, "summaryTableNL", sep = "/"))) {
+  if(file.exists(paste(outputFolder, "summaryTableNL", sep = "/")) & updateFiles == T) {
     summaryHistory <- read.table(paste(outputFolder, "summaryTableNL", sep = "/"), sep = "\t", header = T, check.names = F, stringsAsFactors = F)
     summaryHistory <- summaryHistory %>%
       gather(key = nl, value = n, -1) %>%
@@ -192,17 +196,37 @@ if(length(files) != 0) {
   summaryTable[is.na(summaryTable)] <- "0"
 
   summaryTable[, 2:ncol(summaryTable)] <- sapply(summaryTable[, 2:ncol(summaryTable)], function(x) as.integer(x))
-  write.table(summaryTable, paste(outputFolder, "/summaryTableNL", sep = "/"), row.names = F, quote = F, sep = "\t")
-  write.table(summaryTable, "~/Dropbox/Research/PhD work/shared folders/FIBRATIONS/IAN-NETWORKS/summaryTableNL", row.names = F, quote = F, sep = "\t")
+  if(updateFiles == T) {
+    write.table(summaryTable, paste(outputFolder, "/summaryTableNL", sep = "/"), row.names = F, quote = F, sep = "\t")
+    write.table(summaryTable, "~/Dropbox/Research/PhD work/shared folders/FIBRATIONS/IAN-NETWORKS/summaryTableNL", row.names = F, quote = F, sep = "\t")
+  } else {
+    write.table(summaryTable, "~/Dropbox/Research/PhD work/shared folders/FIBRATIONS/IAN-NETWORKS/modelSummaryNL", row.names = F, quote = F, sep = "\t")
+  }
+
+  # summaryTable <- read.table(paste(outputFolder, "summaryTableNL", sep = "/"), sep = "\t", header = T, check.names = F, stringsAsFactors = F)
+  ds <- read.csv(paste(outputFolder, "datasets.csv", sep = "/"), stringsAsFactors = F)
+  ds$File.name <- gsub(".txt$", "", ds$File.name)
+  colnames(ds)[1] <- "Dataset"
+  summary <- merge(ds, summaryTable, by="Dataset")
+
+  patterns <- c("Dataset", "Type", "Subtype", "Species", "Directed",
+                "Number of nodes", "Number of edges",
+                "Number of blocks","Number of nodes in fibers",
+                "Number of nodes in SCC", "Number of SCC",
+                "n = [0-9]+, l = [0-9]+", "n > 1", "Multi-layered Fiber",
+                "Fibonacci", "Unclassified")
+  patterns <- paste("^", patterns, "$", sep = "")
+  neededColumns <- foreach(i = 1:length(patterns), .combine = 'c') %do% {
+    grep(patterns[i], colnames(summary))
+  }
+
+  summary <- summary[, neededColumns]
+
+  if(updateFiles == T) {
+    write.table(summary, "~/Dropbox/Research/PhD work/shared folders/FIBRATIONS/IAN-NETWORKS/summaryNL", row.names = F, quote = F, sep = "\t")
+  }
+
 } else {
   print("No new datasets, please see summary history file for history")
 }
 
-#summaryTable <- read.table(paste(outputFolder, "summaryTableNL", sep = "/"), sep = "\t", header = T, check.names = F, stringsAsFactors = F)
-ds <- read.csv(paste(outputFolder, "datasets.csv", sep = "/"), stringsAsFactors = F)
-ds$File.name <- gsub(".txt$", "", ds$File.name)
-colnames(ds)[1] <- "Dataset"
-summary <- merge(ds, summaryTable, by="Dataset")
-summary <- summary[, c(1, 3, 6, 114, 113, 112, 115, 116, 117, 12:111, 11, 10, 118)]
-
-write.table(summary, "~/Dropbox/Research/PhD work/shared folders/FIBRATIONS/IAN-NETWORKS/summaryNL", row.names = F, quote = F, sep = "\t")
