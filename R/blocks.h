@@ -1,3 +1,5 @@
+/* Author: Ian Leifer <ianleifer93@gmail.com> */
+
 #ifndef BUILDINGBLOCK_H
 #define BUILDINGBLOCK_H
 #include <vector>

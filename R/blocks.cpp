@@ -1,3 +1,5 @@
+/* Author: Ian Leifer <ianleifer93@gmail.com> */
+
 #include "blocks.h"
 #include <iostream>
 #include <fstream>

@@ -1,3 +1,5 @@
+# Author: Ian Leifer <ianleifer93@gmail.com>
+
 library(tidyr)
 library(dplyr)
 library(igraph)

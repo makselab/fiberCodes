@@ -1,3 +1,5 @@
+/* Author: Ian Leifer <ianleifer93@gmail.com> */
+
 #ifndef PROCESSOR_H
 #define PROCESSOR_H
 #include <vector>
