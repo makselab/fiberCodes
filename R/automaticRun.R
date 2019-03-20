@@ -56,7 +56,7 @@ datasets <- read.csv(paste(outputFolder, "datasets.csv", sep = "/"), stringsAsFa
 datasets <- datasets[!is.na(datasets$Directed), ]
 files <- files[files %in% datasets$File.name]
 
-updateFiles <- F
+updateFiles <- T
 
 if(length(files) != 0) {
   myCluster <- makeCluster(detectCores() - 1, outfile = "")
@@ -102,7 +102,7 @@ if(length(files) != 0) {
     runCode <- !file.exists(paste(outputFolder, "/", gsub(".txt","", files[f]), ".txt", sep = "")) & !notRun
     datasets <- read.csv(paste(outputFolder, "datasets.csv", sep = "/"), stringsAsFactors = F)
     directed <- datasets$Directed[grep(paste("^", files[f], "$", sep = ""), datasets$File.name)]
-    # directed = 1
+    #directed = 1
     if(directed == 1) {
       buildingBlocksNeeded = 1
     } else {
@@ -223,7 +223,37 @@ if(length(files) != 0) {
   }
 
   summary <- summary[, neededColumns]
+  summary$`Number of blocks` <- summary$`Number of blocks` - summary$Unclassified
+  summary <- summary[, -grep("Unclassified", colnames(summary))]
 
+  # here we just sort columns
+  columnNames <- as.data.frame(colnames(summary[, 12:ncol(summary)]), stringsAsFactors = F)
+  colnames(columnNames)[1] <- "columnNames"
+  columnNames$oldId <- 12:ncol(summary)
+
+  columnNames$n <- as.integer(gsub("n = ([0-9]*),.*", "\\1", columnNames$columnNames))
+  columnNames$l <- as.integer(gsub(".*, l = ([0-9]*)*", "\\1", columnNames$columnNames))
+
+  nonIntegernlFactors <- columnNames %>%
+    filter(is.na(n))
+
+  nonIntegernlFactors <- unique(nonIntegernlFactors$columnNames)
+
+  nlFactors <- columnNames %>%
+    filter(!is.na(n)) %>%
+    arrange(n, l) %>%
+    group_by(n, l) %>%
+    summarise(columnNames = first(columnNames))
+
+  nlFactors <- nlFactors$columnNames
+  nlFactors <- c(nlFactors, nonIntegernlFactors[c(3, 2, 1)])
+
+
+  columnNames$columnNames <- factor(columnNames$columnNames, levels = nlFactors)
+
+  columnNames <- arrange(columnNames, columnNames)
+
+  summary <- summary[, c(1:11, columnNames$oldId)]
   if(updateFiles == T) {
     write.table(summary, "~/Dropbox/Research/PhD work/shared folders/FIBRATIONS/IAN-NETWORKS/summaryNL", row.names = F, quote = F, sep = "\t")
   }
