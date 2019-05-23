@@ -1,6 +1,7 @@
 Directed: 1
-Weighted: 1
+Weighted: 0
 CSV: 0
 Gephi: 1
-Input File: test4.txt
-Output File: out4.txt
+BuildingBlocks: 1
+Input File: /home/ian/Desktop/FiberRunsForOthers/TFcircadian.txt
+Output File: /home/ian/Desktop/FiberRunsForOthers/TFcircadianResult.txt
