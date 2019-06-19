@@ -166,9 +166,15 @@ getBlocks <- function(prefix) {
 
     # this big structure of ifs is hard to understand, but it is drawn in block diagram in file blockdiagram.xml
     if(isFiberSendingToRegulators(edges)) {
-      blocks$Class[id + 1] <- "Feedback Fiber"
-      blocks$BlockName[id + 1] <- "Feedback Fiber"
-      blocks$nl[id + 1] <- "Fibonacci"
+      if(doFibersSendToFibers(edges)) {
+        blocks$Class[id + 1] <- "Feedback Fiber"
+        blocks$BlockName[id + 1] <- "Feedback Fiber"
+        blocks$nl[id + 1] <- "Fibonacci"
+      } else {
+        blocks$Class[id + 1] <- "Feedback Fiber"
+        blocks$BlockName[id + 1] <- "Fibonacci n = 1"
+        blocks$nl[id + 1] <- "n = 1, l = 0"
+      }
     } else {
       if(!isOnlyMainFiber(block, fiberId)) {
         blocks$Class[id + 1] <- "Multi-layered Fiber"
