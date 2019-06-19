@@ -171,7 +171,7 @@ getBlocks <- function(prefix) {
         blocks$BlockName[id + 1] <- "Feedback Fiber"
         blocks$nl[id + 1] <- "Fibonacci"
       } else {
-        blocks$Class[id + 1] <- "Feedback Fiber"
+        blocks$Class[id + 1] <- "Fibonacci n = 1"
         blocks$BlockName[id + 1] <- "Fibonacci n = 1"
         blocks$nl[id + 1] <- "n = 1, l = 0"
       }
