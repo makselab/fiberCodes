@@ -20,6 +20,7 @@ areAllNodesFromBlockInFiber <- function(block) {
 }
 
 isSizeOfInputSetOne <- function(block, edges) {
+  edges <- edges[!duplicated(edges[, 1:2])]
   fiberNode <- block %>%
     filter(NodeType == "Fiber") %>%
     select(Node) %>%
