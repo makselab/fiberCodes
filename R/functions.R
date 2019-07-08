@@ -47,16 +47,12 @@ readNetworkFile <- function(configuration) {
 }
 
 # TODO: treat properly the case of having same names in a different case i.e. araC and AraC
-createNodeMap <- function(network) {
-  uniqueSource <- data.frame(unique(network$Source), stringsAsFactors = F)
-  uniqueTarget <- data.frame(unique(network$Target), stringsAsFactors = F)
-  colnames(uniqueSource)[1] <- "Label"
-  colnames(uniqueTarget)[1] <- "Label"
-  uniqueNodes <- rbind(uniqueSource, uniqueTarget)
-  uniqueNodes <- data.frame(unique(uniqueNodes), stringsAsFactors = F)
-  nodeMap <- uniqueNodes %>%
-    arrange(Label) %>%
-    mutate(Id = row_number() - 1)
+createNodeMap <- function(network, configuration) {
+  graph <- graph_from_edgelist(as.matrix(network[, 1:2]), directed = configuration$Directed)
+  nodeMap <- as.data.frame(vertex_attr(graph, "name"), stringsAsFactors = F)
+  nodeMap$Id <- 1:nrow(nodeMap) - 1
+  colnames(nodeMap)[1] <- "Label"
+
   return(nodeMap)
 }
 
@@ -87,14 +83,25 @@ getWeightIdByName <- function(weightName, weightMap) {
 
 getTransformedConnectivity <- function(configuration, network, nodeMap, weightMap) {
   connectivity <- network
-  for(i in 1:nrow(connectivity)) {
-    connectivity[i, 1] <- getNodeIdByLabel(connectivity[i, 1], nodeMap)
-    connectivity[i, 2] <- getNodeIdByLabel(connectivity[i, 2], nodeMap)
-    if(configuration$Weighted == "1") {
+
+  graph <- graph_from_edgelist(as.matrix(connectivity[, 1:2]), directed = configuration$Directed)
+  connectivity <- as.data.frame(as_edgelist(graph, names = F), stringsAsFactors = F)
+  if(configuration$Weighted == "1") {
+    connectivity <- cbind(connectivity, network$Weight)
+    connectivity <- connectivity %>%
+      mutate(`network$Weight` = as.character(`network$Weight`))
+    colnames(connectivity) = c("Source", "Target", "Weight")
+  } else {
+    colnames(connectivity) = c("Source", "Target")
+  }
+  connectivity[, 1:2] <- connectivity[, 1:2] - 1
+
+  if(configuration$Weighted == "1") {
+    for(i in 1:nrow(connectivity)) {
       connectivity[i, 3] <- getWeightIdByName(connectivity[i, 3], weightMap)
     }
-    if((i %% 10000) == 0) {print(paste("Transformed ", i, "/", nrow(connectivity), " connectivity lines", sep = ""))}
   }
+
   return(connectivity)
 }
 
