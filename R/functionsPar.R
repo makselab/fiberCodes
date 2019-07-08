@@ -174,8 +174,6 @@ writeOutputToFiles <- function(configuration, fibers, buildingBlocks, nodeMap, n
 }
 
 library(igraph)
-library(foreach)
-library(RColorBrewer)
 
 writeBuldingBlocksToFiles <- function(configuration, buildingBlocks, nodeMap, csvNetwork) {
   if(nrow(buildingBlocks) == 0) {return()}
@@ -184,6 +182,8 @@ writeBuldingBlocksToFiles <- function(configuration, buildingBlocks, nodeMap, cs
   system(paste("mkdir ", configuration$OutputPath, sep = ""))
 
   if(configuration$Weighted == "1") {
+    library(foreach)
+    library(RColorBrewer)
     csvNetwork$color <- group_indices(csvNetwork, Weight)
     numberOfColors <- max(csvNetwork$color)
     if(numberOfColors < 9) {
@@ -221,6 +221,7 @@ writeBuldingBlocksToFiles <- function(configuration, buildingBlocks, nodeMap, cs
     edges <- blockConnections
     network <- graph_from_data_frame(d = edges, vertices = nodes, directed = as.integer(configuration$Directed))
     V(network)$label.size <- 30
+    V(network)$color <- group_indices(nodes, FiberId)
 
     png(filename = paste(configuration$OutputPath, "/", buildingBlocks$Id[i], ".png", sep = ""), width = 1280, height = 720)
     plot(network, edge.color = edges$color, vertex.label.cex = 2.5)

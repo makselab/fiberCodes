@@ -239,6 +239,7 @@ writeBuldingBlocksToFiles <- function(configuration, buildingBlocks, nodeMap, cs
     edges <- blockConnections
     network <- graph_from_data_frame(d = edges, vertices = nodes, directed = as.integer(configuration$Directed))
     V(network)$label.size <- 30
+    V(network)$color <- group_indices(nodes, FiberId)
 
     png(filename = paste(configuration$OutputPath, "/", buildingBlocks$Id[i], ".png", sep = ""), width = 1280, height = 720)
     plot(network, edge.color = edges$color, vertex.label.cex = 2.5)
