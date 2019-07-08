@@ -174,12 +174,27 @@ writeOutputToFiles <- function(configuration, fibers, buildingBlocks, nodeMap, n
 }
 
 library(igraph)
+library(foreach)
+library(RColorBrewer)
 
 writeBuldingBlocksToFiles <- function(configuration, buildingBlocks, nodeMap, csvNetwork) {
   if(nrow(buildingBlocks) == 0) {return()}
   configuration$OutputPath <- gsub(".[A-z]{3}$", "", configuration$OutputFile)
   configuration$OutputPath <- paste(configuration$OutputPath, "buildingBlocks", sep = "")
   system(paste("mkdir ", configuration$OutputPath, sep = ""))
+
+  if(configuration$Weighted == "1") {
+    csvNetwork$color <- group_indices(csvNetwork, Weight)
+    numberOfColors <- max(csvNetwork$color)
+    if(numberOfColors < 9) {
+      edgeColors <- brewer.pal(numberOfColors, "Set1")
+    } else {
+      edgeColors <- rainbow(numberOfColors)
+    }
+    csvNetwork$color <- edgeColors[csvNetwork$color]
+
+    legendColors <- foreach(f = 1:numberOfColors, .combine = c) %do% {first(csvNetwork$Weight[grepl(edgeColors[f], csvNetwork$color)])}
+  }
 
   for(i in 1:nrow(buildingBlocks)) {
     # get nodes data
@@ -206,13 +221,20 @@ writeBuldingBlocksToFiles <- function(configuration, buildingBlocks, nodeMap, cs
     edges <- blockConnections
     network <- graph_from_data_frame(d = edges, vertices = nodes, directed = as.integer(configuration$Directed))
     V(network)$label.size <- 30
-    V(network)$color <- group_indices(nodes, FiberId)
-    if(configuration$Weighted == "1") {
-      edge.col <- group_indices(edges, Weight)
-    }
 
     png(filename = paste(configuration$OutputPath, "/", buildingBlocks$Id[i], ".png", sep = ""), width = 1280, height = 720)
     plot(network, edge.color = edges$color, vertex.label.cex = 2.5)
+    oldMargins <- par("mar")
+    par(mar = c(0, 0, 0, 0))
+    if(configuration$Weighted == "1") {
+      plot(network, edge.color = edges$color, vertex.label.cex = 2.5)
+      legend(x = 1.2, y = 1.1, legend = legendColors,
+             col = edgeColors, lty = 1, lwd = 3, cex = 1,
+             text.font = 4, bg = 'white')
+    } else {
+      plot(network, vertex.label.cex = 2.5)
+    }
+    par(mar = oldMargins)
     dev.off()
   }
 }
