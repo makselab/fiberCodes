@@ -186,7 +186,7 @@ writeBuldingBlocksToFiles <- function(configuration, buildingBlocks, nodeMap, cs
     library(RColorBrewer)
     csvNetwork$color <- group_indices(csvNetwork, Weight)
     numberOfColors <- max(csvNetwork$color)
-    if(numberOfColors < 9) {
+    if(numberOfColors < 9 & numberOfColors > 2) {
       edgeColors <- brewer.pal(numberOfColors, "Set1")
     } else {
       edgeColors <- rainbow(numberOfColors)
