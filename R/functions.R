@@ -207,7 +207,12 @@ writeBuldingBlocksToFiles <- function(configuration, buildingBlocks, nodeMap, cs
   configuration$OutputPath <- paste(configuration$OutputPath, "buildingBlocks", sep = "")
   system(paste("mkdir ", configuration$OutputPath, sep = ""))
 
+  graph <- graph_from_edgelist(as.matrix(csvNetwork[, 1:2]), directed = T)
+
   if(configuration$Weighted == "1") {
+    E(graph)$weight <- group_indices(csvNetwork, Weight)
+
+    # deal with colors
     csvNetwork$color <- group_indices(csvNetwork, Weight)
     numberOfColors <- max(csvNetwork$color)
     if(numberOfColors < 9 & numberOfColors > 2) {
@@ -216,6 +221,8 @@ writeBuldingBlocksToFiles <- function(configuration, buildingBlocks, nodeMap, cs
       edgeColors <- rainbow(numberOfColors)
     }
     csvNetwork$color <- edgeColors[csvNetwork$color]
+
+    graph <- set_edge_attr(graph, "color", value = csvNetwork$color)
 
     legendColors <- foreach(f = 1:numberOfColors, .combine = c) %do% {first(csvNetwork$Weight[grepl(edgeColors[f], csvNetwork$color)])}
   }
@@ -237,7 +244,16 @@ writeBuldingBlocksToFiles <- function(configuration, buildingBlocks, nodeMap, cs
     columnNames <- colnames(csvNetwork)
     blockConnections <- data.frame(matrix(vector(), nrow = 0, ncol = length(columnNames), dimnames = list(c(), columnNames)), stringsAsFactors = F)
     bbNodes <- as.data.frame(strsplit(buildingBlocks$Nodes[i], ", "), stringsAsFactors = F)
-    blockConnections <- csvNetwork[csvNetwork$Source %in% bbNodes[, 1] & csvNetwork$Target %in% bbNodes[, 1], ]
+
+    subgraph <- induced_subgraph(graph, bbNodes[, 1], impl = "auto")
+
+    blockConnections <- as.data.frame(as_edgelist(subgraph, names = T), stringsAsFactors = F)
+    colnames(blockConnections) <- c("Source", "Target")
+    if(configuration$Weighted == "1") {
+      blockConnections$Weight <- legendColors[E(subgraph)$weight]
+      blockConnections$Type <- "directed"
+      blockConnections$color <- E(subgraph)$color
+    }
 
     # write to edges file
     fileName <- paste(configuration$OutputPath, "/", buildingBlocks$Id[i], "_edges.csv", sep = "")
