@@ -20,7 +20,7 @@ areAllNodesFromBlockInFiber <- function(block) {
 }
 
 isSizeOfInputSetOne <- function(block, edges) {
-  edges <- edges[!duplicated(edges[, 1:2])]
+  edges <- edges[!duplicated(edges[, 1:2]), ]
   fiberNode <- block %>%
     filter(NodeType == "Fiber") %>%
     select(Node) %>%
@@ -130,7 +130,7 @@ getBlocks <- function(prefix) {
   # starting work with unique block
   for(id in 0:max(tidyBlocks$Id)) {
     if(as.integer(max(tidyBlocks$Id) / 10) != 0) {
-      if(id %% as.integer(max(tidyBlocks$Id) / 10) == 1) {
+      if(id %% as.integer(max(tidyBlocks$Id) / 100) == 1) {
         print(paste("Classifing ", id, "/", max(tidyBlocks$Id), " blocks", sep = ""))
       }
     } else {
@@ -159,9 +159,9 @@ getBlocks <- function(prefix) {
     edgesFileName <- paste(prefix, "buildingBlocks/", id, "_edges.csv", sep = "")
     edges <- read.csv(edgesFileName, stringsAsFactors = F)
 
-    for(i in 1:nrow(edges)) {
-      edges$SourceType[i] <- block[grep(paste("^", edges$Source[i], "$", sep = ""), block$Node), "NodeType"]
-      edges$TargetType[i] <- block[grep(paste("^", edges$Target[i], "$", sep = ""), block$Node), "NodeType"]
+    for(i in 1:nrow(block)) {
+      edges$SourceType[edges$Source == block$Node[i]] <- block$NodeType[i]
+      edges$TargetType[edges$Target == block$Node[i]] <- block$NodeType[i]
     }
 
     # this big structure of ifs is hard to understand, but it is drawn in block diagram in file blockdiagram.xml
@@ -235,14 +235,35 @@ getBlocks <- function(prefix) {
         }
       }
     }
+
+    negativeWeight = "(Repression|R|repression|negative)"
+    if(blocks$Class[id + 1] == "Chain") {
+      if(all(grepl(negativeWeight, edges$Weight))) {
+        blocks$Class[id + 1] = "Repression Chain"
+      }
+    }
+
+    if(blocks$Class[id + 1] == "Feed-Forward Fiber") {
+      fiberEdges <- filter(edges, SourceType == "Fiber" & TargetType == "Fiber")
+      if(all(grepl(negativeWeight, fiberEdges$Weight))) {
+        blocks$Class[id + 1] = "UNSAT Feed-Forward Fiber"
+      }
+    }
+
+    if(blocks$Class[id + 1] == "n > 1") {
+      fiberEdges <- filter(edges, Source != Target)
+      if(all(grepl(negativeWeight, fiberEdges$Weight))) {
+        blocks$Class[id + 1] = "Negative n = 2"
+      }
+    }
   }
   return(blocks)
 }
 
-#setwd("/home/ian/Desktop")
-#prefix <- "~/Dropbox/groupoid_finding_codes/naturePhysRuns/tmpData/output/Ecoli"
+# setwd("/home/ian/Desktop")
+# prefix <- "/home/ian/Desktop/runs/combinedKEGG"
 #start.time <- Sys.time()
-#blocks <- getBlocks(prefix)
+# blocks <- getBlocks(prefix)
 #now.time <- Sys.time()
 #time.taken <- now.time - start.time
 #print(time.taken)
