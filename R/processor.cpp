@@ -41,11 +41,11 @@ void Processor::run() {
 	vector<int> nodeColors(numberOfNodes, 0);
 	int numberOfColors = noInputNodes.size() + onlyLoopbackInputNodes.size() + 1;
 	for(int i = 0; i < noInputNodes.size(); i++) {
-		nodeColors[noInputNodes[i]] = i;
+		nodeColors[noInputNodes[i]] = 1 + i;
 	}
 
 	for(int i = 0; i < onlyLoopbackInputNodes.size(); i++) {
-		nodeColors[onlyLoopbackInputNodes[i]] = noInputNodes.size() + i;
+		nodeColors[onlyLoopbackInputNodes[i]] = 1 + noInputNodes.size() + i;
 	}
 
 	numberOfColors = findGroupoids(numberOfNodes, connections, numberOfColors, nodeColors);
