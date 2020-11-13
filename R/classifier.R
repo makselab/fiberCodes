@@ -130,7 +130,7 @@ getBlocks <- function(prefix) {
   # starting work with unique block
   for(id in 0:max(tidyBlocks$Id)) {
     if(as.integer(max(tidyBlocks$Id) / 10) != 0) {
-      if(id %% as.integer(max(tidyBlocks$Id) / 100) == 1) {
+      if(id %% as.integer(max(tidyBlocks$Id) / 10) == 1) {
         print(paste("Classifing ", id, "/", max(tidyBlocks$Id), " blocks", sep = ""))
       }
     } else {
@@ -233,27 +233,6 @@ getBlocks <- function(prefix) {
             }
           }
         }
-      }
-    }
-
-    negativeWeight = "(Repression|R|repression|negative)"
-    if(blocks$Class[id + 1] == "Chain") {
-      if(all(grepl(negativeWeight, edges$Weight))) {
-        blocks$Class[id + 1] = "Repression Chain"
-      }
-    }
-
-    if(blocks$Class[id + 1] == "Feed-Forward Fiber") {
-      fiberEdges <- filter(edges, SourceType == "Fiber" & TargetType == "Fiber")
-      if(all(grepl(negativeWeight, fiberEdges$Weight))) {
-        blocks$Class[id + 1] = "UNSAT Feed-Forward Fiber"
-      }
-    }
-
-    if(blocks$Class[id + 1] == "n > 1") {
-      fiberEdges <- filter(edges, Source != Target)
-      if(all(grepl(negativeWeight, fiberEdges$Weight))) {
-        blocks$Class[id + 1] = "Negative n = 2"
       }
     }
   }
