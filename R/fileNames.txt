@@ -1,3 +1,0 @@
-Adjacency File: adjacency.txt
-Fiber File: fibers.txt
-Building Blocks File: buildingBlocks.txt
